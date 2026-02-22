@@ -1,6 +1,6 @@
 import "./styles.css";
 import { Outlet } from "react-router";
-import { DumpError, GlobalNavigationLoadingBar, Sidebar } from "./routes/root.client";
+import { DumpError, GlobalNavigationLoadingBar, ScrollToTop, Sidebar } from "./routes/root.client";
 import { ToastProvider } from "./components/toast.client";
 import { ConfirmDialogProvider } from "./components/confirm-dialog.client";
 import { ThemeProvider } from "./components/theme-provider.client";
@@ -32,9 +32,10 @@ export function Layout({ children }: { children: React.ReactNode }) {
       <body className="min-h-screen">
         <ThemeProvider>
           <GlobalNavigationLoadingBar />
+          <ScrollToTop />
           <Sidebar />
           <KeyboardShortcuts />
-          <div className="lg:ml-56">
+          <div className="lg:ml-56" style={{ viewTransitionName: "main-content" }}>
             <ToastProvider>
               <ConfirmDialogProvider>{children}</ConfirmDialogProvider>
             </ToastProvider>

@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { useSearchParams } from "react-router";
 import { useToast } from "../components/toast.client";
 
 type Task = {
@@ -36,7 +37,15 @@ export function TaskList({
   deleteAction: (formData: FormData) => Promise<{ success: boolean }>;
   updateAction: (formData: FormData) => Promise<{ success: boolean; error?: string }>;
 }) {
-  const [filter, setFilter] = React.useState<"pending" | "completed" | "all">("pending");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const filter = (searchParams.get("filter") as "pending" | "completed" | "all") || "pending";
+  const setFilter = (f: "pending" | "completed" | "all") => {
+    if (f === "pending") {
+      setSearchParams({}, { replace: true });
+    } else {
+      setSearchParams({ filter: f }, { replace: true });
+    }
+  };
   const [editingId, setEditingId] = React.useState<number | null>(null);
   const [expandedId, setExpandedId] = React.useState<number | null>(null);
   const { addToast } = useToast();
@@ -215,7 +224,7 @@ function TaskCard({
 
   return (
     <div
-      className={`group rounded-lg transition ${
+      className={`group rounded-lg card-hover ${
         task.completedAt
           ? "bg-gray-50 dark:bg-gray-700/30 opacity-60"
           : isOverdue
@@ -441,7 +450,7 @@ function InlineTaskEditor({
           type="button"
           onClick={handleSave}
           disabled={saving || !title.trim()}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-garden-600 text-white text-sm font-medium hover:bg-garden-700 disabled:opacity-50 transition-colors cursor-pointer"
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-garden-600 text-white text-sm font-medium hover:bg-garden-700 disabled:opacity-50 transition-colors cursor-pointer press"
         >
           {saving ? "Saving..." : "Save"}
         </button>
@@ -540,7 +549,7 @@ export function AddTaskForm({
       <div className="flex items-center gap-2">
         <button
           type="submit"
-          className="inline-flex items-center gap-2 rounded-lg bg-garden-600 px-3 py-1.5 text-sm font-medium text-white shadow-sm hover:bg-garden-700 disabled:opacity-50 transition-colors cursor-pointer"
+          className="inline-flex items-center gap-2 rounded-lg bg-garden-600 px-3 py-1.5 text-sm font-medium text-white shadow-sm hover:bg-garden-700 disabled:opacity-50 transition-colors cursor-pointer press"
         >
           Add Task
         </button>

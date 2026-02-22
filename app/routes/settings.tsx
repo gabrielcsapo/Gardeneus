@@ -22,7 +22,7 @@ const Component = async () => {
 
       <div className="bg-white dark:bg-gray-800 rounded-xl border border-earth-200 dark:border-gray-700 shadow-sm">
         <div className="px-6 py-5 border-b border-earth-100 dark:border-gray-700">
-          <h1 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Garden Settings</h1>
+          <h1 className="text-xl font-semibold text-gray-900 dark:text-gray-100" style={{ viewTransitionName: "page-title" }}>Garden Settings</h1>
           <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
             Configure your growing zone and frost dates to get personalized planting
             recommendations.

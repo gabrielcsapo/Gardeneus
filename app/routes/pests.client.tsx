@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { useSearchParams } from "react-router";
 
 type Pest = {
   id: number;
@@ -32,9 +33,31 @@ export function PestDashboard({
   currentMonth: number;
   logAction: (formData: FormData) => Promise<{ success: boolean; error?: string }>;
 }) {
-  const [search, setSearch] = React.useState("");
-  const [typeFilter, setTypeFilter] = React.useState<"all" | "pest" | "disease">("all");
-  const [selectedPlant, setSelectedPlant] = React.useState<string>("");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const search = searchParams.get("q") || "";
+  const setSearch = (q: string) => {
+    const params: Record<string, string> = {};
+    if (q) params.q = q;
+    if (typeFilter !== "all") params.type = typeFilter;
+    if (selectedPlant) params.plant = selectedPlant;
+    setSearchParams(params, { replace: true });
+  };
+  const typeFilter = (searchParams.get("type") as "all" | "pest" | "disease") || "all";
+  const setTypeFilter = (t: "all" | "pest" | "disease") => {
+    const params: Record<string, string> = {};
+    if (search) params.q = search;
+    if (t !== "all") params.type = t;
+    if (selectedPlant) params.plant = selectedPlant;
+    setSearchParams(params, { replace: true });
+  };
+  const selectedPlant = searchParams.get("plant") || "";
+  const setSelectedPlant = (p: string) => {
+    const params: Record<string, string> = {};
+    if (search) params.q = search;
+    if (typeFilter !== "all") params.type = typeFilter;
+    if (p) params.plant = p;
+    setSearchParams(params, { replace: true });
+  };
   const [expandedId, setExpandedId] = React.useState<number | null>(null);
   const [selectedSymptoms, setSelectedSymptoms] = React.useState<string[]>([]);
   const [showSymptomChecker, setShowSymptomChecker] = React.useState(false);
@@ -356,7 +379,7 @@ function PestCard({
 
   return (
     <div
-      className={`bg-white dark:bg-gray-800 rounded-xl border shadow-sm overflow-hidden transition ${
+      className={`bg-white dark:bg-gray-800 rounded-xl border shadow-sm overflow-hidden card-hover ${
         isSymptomMatch && selectedSymptoms.length > 0
           ? "border-amber-300 dark:border-amber-700 ring-1 ring-amber-200 dark:ring-amber-800"
           : "border-earth-200 dark:border-gray-700"

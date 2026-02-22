@@ -74,6 +74,88 @@ const SUN_CONFIG: Record<string, { icon: string; label: string }> = {
 type SortMode = "alpha" | "plant_soon" | "companions";
 type ViewMode = "grid" | "list";
 
+const GRID_ROW_HEIGHT = 250;
+const LIST_ROW_HEIGHT = 52;
+
+function useGridColumns(): number {
+  const [columns, setColumns] = React.useState(1);
+
+  React.useEffect(() => {
+    const lg = window.matchMedia("(min-width: 1024px)");
+    const sm = window.matchMedia("(min-width: 640px)");
+    const update = () => setColumns(lg.matches ? 3 : sm.matches ? 2 : 1);
+    update();
+    lg.addEventListener("change", update);
+    sm.addEventListener("change", update);
+    return () => {
+      lg.removeEventListener("change", update);
+      sm.removeEventListener("change", update);
+    };
+  }, []);
+
+  return columns;
+}
+
+function useVirtualScroll({
+  totalCount,
+  rowHeight,
+  columns,
+  overscan = 3,
+}: {
+  totalCount: number;
+  rowHeight: number;
+  columns: number;
+  overscan?: number;
+}) {
+  const containerRef = React.useRef<HTMLDivElement>(null);
+  const rafRef = React.useRef(0);
+  const totalRows = Math.ceil(totalCount / columns);
+  const totalHeight = totalRows * rowHeight;
+
+  const [range, setRange] = React.useState({ startRow: 0, endRow: Math.ceil(20 / columns) });
+
+  React.useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+
+    const calculate = () => {
+      const rect = el.getBoundingClientRect();
+      const vh = window.innerHeight;
+      const scrolled = -rect.top;
+      const rows = Math.ceil(totalCount / columns);
+
+      const first = Math.max(0, Math.floor(scrolled / rowHeight));
+      const last = Math.min(Math.max(0, rows - 1), Math.ceil((scrolled + vh) / rowHeight));
+      const s = Math.max(0, first - overscan);
+      const e = Math.min(Math.max(0, rows - 1), last + overscan);
+
+      setRange((prev) => (prev.startRow === s && prev.endRow === e ? prev : { startRow: s, endRow: e }));
+    };
+
+    const onScroll = () => {
+      cancelAnimationFrame(rafRef.current);
+      rafRef.current = requestAnimationFrame(calculate);
+    };
+
+    calculate();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll, { passive: true });
+    return () => {
+      cancelAnimationFrame(rafRef.current);
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+    };
+  }, [totalCount, rowHeight, columns, overscan]);
+
+  return {
+    containerRef,
+    startIndex: range.startRow * columns,
+    endIndex: Math.min(totalCount, (range.endRow + 1) * columns),
+    totalHeight,
+    offsetY: range.startRow * rowHeight,
+  };
+}
+
 export function PlantSearch({
   plants,
   lastFrostDate,
@@ -195,6 +277,17 @@ export function PlantSearch({
     return activePlantings.filter((p) => p.plantId === selectedPlant.id);
   }, [selectedPlant, activePlantings]);
 
+  // Virtual scroll
+  const gridColumns = useGridColumns();
+  const vsColumns = viewMode === "grid" ? gridColumns : 1;
+  const vsRowHeight = viewMode === "grid" ? GRID_ROW_HEIGHT : LIST_ROW_HEIGHT;
+  const { containerRef, startIndex, endIndex, totalHeight, offsetY } = useVirtualScroll({
+    totalCount: filtered.length,
+    rowHeight: vsRowHeight,
+    columns: vsColumns,
+    overscan: viewMode === "grid" ? 3 : 8,
+  });
+
   return (
     <div>
       {/* Filters */}
@@ -292,35 +385,39 @@ export function PlantSearch({
         </p>
       </div>
 
-      {/* Plant Grid/List */}
-      {viewMode === "grid" ? (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {filtered.map((plant) => (
-            <PlantCard
-              key={plant.id}
-              plant={plant}
-              lastFrostDate={lastFrostDate}
-              onClick={() => setSelectedPlant(plant)}
-              isSelected={selectedPlant?.id === plant.id}
-              companionScore={companionScores.get(plant.id) ?? 0}
-              sortMode={sortMode}
-            />
-          ))}
+      {/* Plant Grid/List (Virtual Scroll) */}
+      {filtered.length > 0 ? (
+        <div ref={containerRef} style={{ height: totalHeight, position: "relative" }}>
+          <div style={{ position: "absolute", top: offsetY, left: 0, right: 0 }}>
+            {viewMode === "grid" ? (
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                {filtered.slice(startIndex, endIndex).map((plant) => (
+                  <PlantCard
+                    key={plant.id}
+                    plant={plant}
+                    lastFrostDate={lastFrostDate}
+                    onClick={() => setSelectedPlant(plant)}
+                    isSelected={selectedPlant?.id === plant.id}
+                    companionScore={companionScores.get(plant.id) ?? 0}
+                    sortMode={sortMode}
+                  />
+                ))}
+              </div>
+            ) : (
+              <div className="flex flex-col gap-1">
+                {filtered.slice(startIndex, endIndex).map((plant) => (
+                  <PlantListRow
+                    key={plant.id}
+                    plant={plant}
+                    onClick={() => setSelectedPlant(plant)}
+                    isSelected={selectedPlant?.id === plant.id}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       ) : (
-        <div className="flex flex-col gap-1">
-          {filtered.map((plant) => (
-            <PlantListRow
-              key={plant.id}
-              plant={plant}
-              onClick={() => setSelectedPlant(plant)}
-              isSelected={selectedPlant?.id === plant.id}
-            />
-          ))}
-        </div>
-      )}
-
-      {filtered.length === 0 && (
         <div className="text-center py-16">
           <p className="text-gray-400 dark:text-gray-500 text-sm">No plants match your filters.</p>
         </div>
@@ -369,7 +466,7 @@ function PlantCard({
   return (
     <button
       type="button"
-      className={`text-left bg-white dark:bg-gray-800 rounded-xl border shadow-sm p-5 flex flex-col gap-3 transition-all cursor-pointer hover:shadow-md hover:border-garden-300 dark:hover:border-garden-600 ${
+      className={`text-left bg-white dark:bg-gray-800 rounded-xl border shadow-sm p-5 flex flex-col gap-3 card-hover cursor-pointer hover:border-garden-300 dark:hover:border-garden-600 ${
         isSelected
           ? "border-garden-500 ring-2 ring-garden-500/20 dark:border-garden-400"
           : "border-earth-200 dark:border-gray-700"

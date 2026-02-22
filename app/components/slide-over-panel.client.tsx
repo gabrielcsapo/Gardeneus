@@ -17,6 +17,8 @@ export function SlideOverPanel({
   children,
   width = "w-[420px]",
 }: SlideOverPanelProps) {
+  const [visible, setVisible] = React.useState(false);
+
   // Close on Escape
   React.useEffect(() => {
     if (!open) return;
@@ -27,9 +29,14 @@ export function SlideOverPanel({
     return () => window.removeEventListener("keydown", handler);
   }, [open, onClose]);
 
-  // Prevent body scroll when open on mobile
+  // Track visibility for exit animation
   React.useEffect(() => {
-    if (open) {
+    if (open) setVisible(true);
+  }, [open]);
+
+  // Prevent body scroll when visible
+  React.useEffect(() => {
+    if (visible) {
       document.body.style.overflow = "hidden";
     } else {
       document.body.style.overflow = "";
@@ -37,21 +44,33 @@ export function SlideOverPanel({
     return () => {
       document.body.style.overflow = "";
     };
-  }, [open]);
+  }, [visible]);
 
-  if (!open) return null;
+  const handleAnimationEnd = () => {
+    if (!open) setVisible(false);
+  };
+
+  if (!visible) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex justify-end">
+    <div className="fixed inset-0 z-50 flex justify-end" onAnimationEnd={handleAnimationEnd}>
       {/* Backdrop */}
       <div
-        className="absolute inset-0 bg-black/20 animate-[fadeIn_0.15s_ease-out]"
+        className={`absolute inset-0 backdrop-blur-sm ${
+          open
+            ? "bg-black/20 animate-[fadeIn_0.15s_ease-out_forwards]"
+            : "bg-black/20 animate-[fadeOut_0.15s_ease-in_forwards]"
+        }`}
         onClick={onClose}
       />
 
       {/* Panel */}
       <div
-        className={`relative ${width} max-w-[90vw] h-full bg-white dark:bg-gray-900 border-l border-earth-200 dark:border-gray-700 shadow-2xl flex flex-col animate-[slideInRight_0.2s_ease-out]`}
+        className={`relative ${width} max-w-[90vw] h-full bg-white dark:bg-gray-900 border-l border-earth-200 dark:border-gray-700 shadow-2xl flex flex-col ${
+          open
+            ? "animate-[slideInRight_0.2s_ease-out]"
+            : "animate-[slideOutRight_0.2s_ease-in_forwards]"
+        }`}
       >
         {/* Header */}
         {title && (

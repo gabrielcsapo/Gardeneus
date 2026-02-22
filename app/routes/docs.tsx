@@ -14,7 +14,7 @@ const Component = () => {
       </nav>
 
       <div className="mb-6">
-        <h1 className="text-xl font-semibold text-gray-900 dark:text-gray-100">API Documentation</h1>
+        <h1 className="text-xl font-semibold text-gray-900 dark:text-gray-100" style={{ viewTransitionName: "page-title" }}>API Documentation</h1>
         <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
           REST API running on port 3001. Used by the iOS companion app for bi-directional sync.
         </p>

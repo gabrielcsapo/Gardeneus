@@ -61,23 +61,36 @@ const QUICK_ACTIONS = [
 
 export function CommandPalette({ entries }: CommandPaletteProps) {
   const [open, setOpen] = React.useState(false);
+  const [visible, setVisible] = React.useState(false);
   const [query, setQuery] = React.useState("");
   const [selectedIndex, setSelectedIndex] = React.useState(0);
   const inputRef = React.useRef<HTMLInputElement>(null);
   const listRef = React.useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
 
-  // Cmd+K / Ctrl+K to open
+  // Cmd+K / Ctrl+K to open, / to open from anywhere
   React.useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key === "k") {
         e.preventDefault();
         setOpen((prev) => !prev);
       }
+      // / to open (but not if already in an input)
+      const target = e.target as HTMLElement;
+      const isInput = target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.tagName === "SELECT" || target.isContentEditable;
+      if (e.key === "/" && !isInput && !open) {
+        e.preventDefault();
+        setOpen(true);
+      }
     };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
-  }, []);
+  }, [open]);
+
+  // Track visibility for exit animation
+  React.useEffect(() => {
+    if (open) setVisible(true);
+  }, [open]);
 
   // Focus input when opened
   React.useEffect(() => {
@@ -118,8 +131,10 @@ export function CommandPalette({ entries }: CommandPaletteProps) {
     setSelectedIndex(0);
   }, [query]);
 
+  const close = () => setOpen(false);
+
   const go = (href: string) => {
-    setOpen(false);
+    close();
     navigate(href);
   };
 
@@ -134,7 +149,7 @@ export function CommandPalette({ entries }: CommandPaletteProps) {
       e.preventDefault();
       go(allResults[selectedIndex].href);
     } else if (e.key === "Escape") {
-      setOpen(false);
+      close();
     }
   };
 
@@ -144,15 +159,32 @@ export function CommandPalette({ entries }: CommandPaletteProps) {
     item?.scrollIntoView({ block: "nearest" });
   }, [selectedIndex]);
 
-  if (!open) return null;
+  const handleAnimationEnd = () => {
+    if (!open) setVisible(false);
+  };
+
+  if (!visible) return null;
 
   return (
-    <div className="fixed inset-0 z-[70] flex items-start justify-center pt-[15vh]">
+    <div
+      className="fixed inset-0 z-[70] flex items-start justify-center pt-[15vh]"
+      onAnimationEnd={handleAnimationEnd}
+    >
       <div
-        className="absolute inset-0 bg-black/25 animate-[fadeIn_0.1s_ease-out]"
-        onClick={() => setOpen(false)}
+        className={`absolute inset-0 backdrop-blur-sm ${
+          open
+            ? "bg-black/25 animate-[fadeIn_0.1s_ease-out_forwards]"
+            : "bg-black/25 animate-[fadeOut_0.1s_ease-in_forwards]"
+        }`}
+        onClick={close}
       />
-      <div className="relative w-[560px] max-w-[90vw] bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-earth-200 dark:border-gray-700 overflow-hidden animate-[scaleIn_0.15s_ease-out]">
+      <div
+        className={`relative w-[560px] max-w-[90vw] bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-earth-200 dark:border-gray-700 overflow-hidden ${
+          open
+            ? "animate-[scaleIn_0.15s_ease-out]"
+            : "animate-[scaleOut_0.15s_ease-in_forwards]"
+        }`}
+      >
         {/* Search input */}
         <div className="flex items-center gap-3 px-4 border-b border-earth-100 dark:border-gray-700">
           <svg

@@ -6,6 +6,7 @@ import { checkCompanionConflicts } from "../../lib/companions.ts";
 import { useToast } from "../toast.client";
 import { PlantIcon } from "../../lib/plant-icons/index.tsx";
 import type { YardElement, PlantInfo, Planting } from "../../lib/yard-types.ts";
+import { PLANT_PALETTE } from "./bed-plant-icons.client.tsx";
 
 const STATUS_ORDER = [
   "planned",
@@ -107,16 +108,7 @@ export function BedPlantingsPanel({
       : [];
 
   return (
-    <div className="bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm rounded-xl border border-earth-200 dark:border-gray-700 shadow-lg p-4 space-y-3">
-      <div className="flex items-center justify-between">
-        <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">
-          Plantings
-        </h3>
-        <span className="text-xs text-gray-500 dark:text-gray-400">
-          ~{Math.round(bedArea)} sq ft
-        </span>
-      </div>
-
+    <div className="space-y-3">
       {/* Capacity bar */}
       <div>
         <div className="flex items-center justify-between text-xs mb-1">
@@ -152,21 +144,40 @@ export function BedPlantingsPanel({
       </div>
 
       {/* Current plantings */}
-      {plantings.length > 0 && (
+      {plantings.length > 0 && (() => {
+        // Build color index map matching SVG visualization order
+        const colorMap = new Map<number, number>();
+        let ci = 0;
+        for (const p of plantings) {
+          if (!colorMap.has(p.plantId)) {
+            colorMap.set(p.plantId, ci % PLANT_PALETTE.length);
+            ci++;
+          }
+        }
+
+        return (
         <div className="space-y-1.5">
           {plantings.map((p) => {
             const plant = plants.find((pl) => pl.id === p.plantId);
             const status = p.status ?? "planned";
             const colors = STATUS_COLORS[status] ?? STATUS_COLORS.planned;
+            const paletteColor = PLANT_PALETTE[colorMap.get(p.plantId) ?? 0];
+            const spacing = plant?.spacingInches ?? 12;
 
             return (
               <button
                 key={p.id}
                 type="button"
-                className="w-full flex items-center gap-2 px-2 py-1.5 bg-earth-50 dark:bg-gray-700/50 rounded-lg hover:bg-earth-100 dark:hover:bg-gray-700 transition-colors cursor-pointer text-left"
+                className="w-full flex items-center gap-2 px-2 py-2 bg-earth-50 dark:bg-gray-700/50 rounded-lg hover:bg-earth-100 dark:hover:bg-gray-700 transition-colors cursor-pointer text-left"
                 onClick={() => setEditingPlanting(p)}
               >
-                <PlantIcon name={plant?.name ?? ""} size={20} className="text-garden-600 dark:text-garden-400 shrink-0" />
+                <div className="relative shrink-0">
+                  <PlantIcon name={plant?.name ?? ""} size={20} className="text-garden-600 dark:text-garden-400" />
+                  <span
+                    className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border-2 border-white dark:border-gray-700"
+                    style={{ backgroundColor: paletteColor }}
+                  />
+                </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-1.5">
                     <span className="text-xs font-medium text-gray-900 dark:text-gray-100 truncate">
@@ -176,12 +187,17 @@ export function BedPlantingsPanel({
                       x{p.quantity ?? 1}
                     </span>
                   </div>
-                  <span
-                    className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] font-medium ${colors.bg} ${colors.text}`}
-                  >
-                    <span className={`w-1 h-1 rounded-full ${colors.dot}`} />
-                    {STATUS_LABELS[status]}
-                  </span>
+                  <div className="flex items-center gap-1.5 mt-0.5">
+                    <span
+                      className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] font-medium ${colors.bg} ${colors.text}`}
+                    >
+                      <span className={`w-1 h-1 rounded-full ${colors.dot}`} />
+                      {STATUS_LABELS[status]}
+                    </span>
+                    <span className="text-[10px] text-gray-400">
+                      {spacing}" apart
+                    </span>
+                  </div>
                 </div>
                 <svg
                   className="w-3.5 h-3.5 text-gray-400 shrink-0"
@@ -198,7 +214,8 @@ export function BedPlantingsPanel({
             );
           })}
         </div>
-      )}
+        );
+      })()}
 
       {/* Add plant */}
       {!adding ? (
@@ -532,14 +549,33 @@ function EditPlantingModal({
         </div>
 
         {plant && (
-          <div className="text-[10px] text-gray-400 border-t border-earth-100 dark:border-gray-700 pt-2 space-y-0.5">
+          <div className="border-t border-earth-100 dark:border-gray-700 pt-3 space-y-2">
+            <h4 className="text-[10px] font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Planting Guide</h4>
+            <div className="grid grid-cols-2 gap-2">
+              {plant.spacingInches && (
+                <div className="bg-garden-50 dark:bg-garden-900/20 rounded-lg px-2 py-1.5">
+                  <p className="text-[10px] text-gray-500 dark:text-gray-400">Spacing</p>
+                  <p className="text-xs font-semibold text-gray-900 dark:text-gray-100">{plant.spacingInches}" apart</p>
+                </div>
+              )}
+              {plant.daysToHarvest && (
+                <div className="bg-amber-50 dark:bg-amber-900/20 rounded-lg px-2 py-1.5">
+                  <p className="text-[10px] text-gray-500 dark:text-gray-400">Harvest</p>
+                  <p className="text-xs font-semibold text-gray-900 dark:text-gray-100">{plant.daysToHarvest} days</p>
+                </div>
+              )}
+            </div>
             {plant.spacingInches && (
-              <p>Spacing: {plant.spacingInches}" apart</p>
+              <div className="bg-earth-50 dark:bg-gray-700/50 rounded-lg px-2.5 py-2">
+                <p className="text-[10px] text-gray-600 dark:text-gray-300 leading-relaxed">
+                  Plant in rows {plant.spacingInches}" apart, with {plant.spacingInches}" between plants.
+                  {quantity > 1 && ` ${quantity} plants need about ${Math.ceil(quantity * plant.spacingInches * plant.spacingInches / 144)} sq ft.`}
+                </p>
+              </div>
             )}
-            {plant.daysToHarvest && (
-              <p>Days to harvest: {plant.daysToHarvest}</p>
+            {planting.plantedDate && (
+              <p className="text-[10px] text-gray-400">Planted: {planting.plantedDate}</p>
             )}
-            {planting.plantedDate && <p>Planted: {planting.plantedDate}</p>}
           </div>
         )}
       </div>

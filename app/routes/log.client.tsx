@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { useSearchParams } from "react-router";
 import { useToast } from "../components/toast.client";
 import { PlantIcon } from "../lib/plant-icons";
 
@@ -169,7 +170,20 @@ export function InteractiveLog({
   deleteAction: (formData: FormData) => Promise<{ success: boolean }>;
 }) {
   const { addToast } = useToast();
-  const [filters, setFilters] = React.useState<FilterState>({ type: null, plant: null, bed: null });
+  const [searchParams, setSearchParams] = useSearchParams();
+  const filters: FilterState = {
+    type: searchParams.get("type") || null,
+    plant: searchParams.get("plant") || null,
+    bed: searchParams.get("bed") || null,
+  };
+  const setFilters = (updater: (prev: FilterState) => FilterState) => {
+    const next = updater(filters);
+    const params: Record<string, string> = {};
+    if (next.type) params.type = next.type;
+    if (next.plant) params.plant = next.plant;
+    if (next.bed) params.bed = next.bed;
+    setSearchParams(params, { replace: true });
+  };
   const [expandedQuickAction, setExpandedQuickAction] = React.useState<string | null>(null);
   const [editingId, setEditingId] = React.useState<number | null>(null);
 
@@ -336,7 +350,7 @@ export function InteractiveLog({
         {activeFilters > 0 && (
           <button
             type="button"
-            onClick={() => setFilters({ type: null, plant: null, bed: null })}
+            onClick={() => setSearchParams({}, { replace: true })}
             className="text-xs text-garden-600 dark:text-garden-400 hover:text-garden-700 dark:hover:text-garden-300 font-medium cursor-pointer"
           >
             Clear ({activeFilters})
@@ -549,7 +563,7 @@ function QuickActionInline({
         <button
           type="submit"
           disabled={submitting}
-          className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-garden-600 text-white text-sm font-medium hover:bg-garden-700 disabled:opacity-50 transition-colors cursor-pointer"
+          className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-garden-600 text-white text-sm font-medium hover:bg-garden-700 disabled:opacity-50 transition-colors cursor-pointer press"
         >
           {submitting ? "..." : "Log"}
         </button>
@@ -612,7 +626,7 @@ function LogEntryCard({
 
   return (
     <div
-      className="bg-white dark:bg-gray-800 rounded-lg border border-earth-200 dark:border-gray-700 shadow-sm p-4 hover:border-garden-300 dark:hover:border-garden-700 transition-colors cursor-pointer group"
+      className="bg-white dark:bg-gray-800 rounded-lg border border-earth-200 dark:border-gray-700 shadow-sm p-4 hover:border-garden-300 dark:hover:border-garden-700 card-hover cursor-pointer group"
       onClick={onStartEdit}
     >
       <div className="flex items-start gap-3">

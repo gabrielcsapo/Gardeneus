@@ -179,6 +179,9 @@ const NAV_ITEMS = [
 ];
 
 
+const PRIMARY_NAV = NAV_ITEMS.slice(0, 3); // Dashboard, Yard, Calendar
+const SECONDARY_NAV = NAV_ITEMS.slice(3);  // Plants, Log, Tasks, Pests, Seeds, Soil
+
 function NavLink({
   item,
   isActive,
@@ -191,10 +194,10 @@ function NavLink({
   return (
     <Link
       to={item.to}
-      className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors no-underline ${
+      className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-150 no-underline ${
         isActive
-          ? "bg-garden-50 text-garden-700 dark:bg-garden-900/30 dark:text-garden-400"
-          : "text-gray-500 hover:text-gray-900 hover:bg-earth-50 dark:text-gray-400 dark:hover:text-gray-100 dark:hover:bg-gray-800"
+          ? "bg-garden-50 text-garden-700 border-l-2 border-garden-500 dark:bg-garden-900/30 dark:text-garden-400 dark:border-garden-400"
+          : "border-l-2 border-transparent text-gray-500 hover:text-gray-900 hover:bg-earth-50 dark:text-gray-400 dark:hover:text-gray-100 dark:hover:bg-gray-800"
       } ${collapsed ? "justify-center" : ""}`}
       title={collapsed ? item.label : undefined}
     >
@@ -251,7 +254,7 @@ export function Sidebar() {
       {/* Mobile overlay */}
       {mobileOpen && (
         <div
-          className="fixed inset-0 z-30 bg-black/20 lg:hidden"
+          className="fixed inset-0 z-30 bg-black/20 backdrop-blur-sm lg:hidden animate-[fadeIn_0.15s_ease-out]"
           onClick={() => setMobileOpen(false)}
         />
       )}
@@ -286,10 +289,19 @@ export function Sidebar() {
         </div>
 
         {/* Nav links */}
-        <nav className="flex-1 flex flex-col px-3 py-3 gap-0.5 overflow-y-auto">
-          {NAV_ITEMS.map((item) => (
-            <NavLink key={item.to} item={item} isActive={isActive(item.to)} collapsed={false} />
-          ))}
+        <nav className="flex-1 flex flex-col px-3 py-3 overflow-y-auto">
+          <div className="flex flex-col gap-0.5">
+            {PRIMARY_NAV.map((item) => (
+              <NavLink key={item.to} item={item} isActive={isActive(item.to)} collapsed={false} />
+            ))}
+          </div>
+          <div className="my-2 mx-3 border-t border-earth-100 dark:border-gray-800" />
+          <p className="px-3 mb-1 text-[10px] font-semibold text-gray-400 dark:text-gray-600 uppercase tracking-widest">Manage</p>
+          <div className="flex flex-col gap-0.5">
+            {SECONDARY_NAV.map((item) => (
+              <NavLink key={item.to} item={item} isActive={isActive(item.to)} collapsed={false} />
+            ))}
+          </div>
         </nav>
 
         {/* API Docs link */}
@@ -317,7 +329,7 @@ export function Sidebar() {
         <div className="border-t border-earth-100 dark:border-gray-800 px-3 py-3 flex items-center gap-1">
           <button
             type="button"
-            className="flex-1 flex items-center justify-center p-2 rounded-lg transition-colors text-gray-500 hover:text-gray-900 hover:bg-earth-50 dark:text-gray-400 dark:hover:text-gray-100 dark:hover:bg-gray-800 cursor-pointer"
+            className="flex-1 flex items-center justify-center p-2 rounded-lg transition-all duration-150 text-gray-500 hover:text-gray-900 hover:bg-earth-50 dark:text-gray-400 dark:hover:text-gray-100 dark:hover:bg-gray-800 cursor-pointer press"
             onClick={toggleDark}
             title={isDark ? "Light Mode" : "Dark Mode"}
           >
@@ -341,7 +353,7 @@ export function Sidebar() {
           </button>
           <Link
             to="/settings"
-            className={`flex-1 flex items-center justify-center p-2 rounded-lg transition-colors ${
+            className={`flex-1 flex items-center justify-center p-2 rounded-lg transition-all duration-150 press ${
               isActive("/settings")
                 ? "text-garden-700 bg-garden-50 dark:text-garden-400 dark:bg-garden-900/30"
                 : "text-gray-500 hover:text-gray-900 hover:bg-earth-50 dark:text-gray-400 dark:hover:text-gray-100 dark:hover:bg-gray-800"
@@ -359,14 +371,42 @@ export function Sidebar() {
   );
 }
 
+export function ScrollToTop() {
+  const location = useLocation();
+  React.useEffect(() => {
+    window.scrollTo({ top: 0 });
+  }, [location.pathname]);
+  return null;
+}
+
 export function GlobalNavigationLoadingBar() {
   const navigation = useNavigation();
+  const [show, setShow] = React.useState(false);
+  const [completing, setCompleting] = React.useState(false);
 
-  if (navigation.state === "idle") return null;
+  React.useEffect(() => {
+    if (navigation.state !== "idle") {
+      setShow(true);
+      setCompleting(false);
+    } else if (show) {
+      setCompleting(true);
+      const t = setTimeout(() => {
+        setShow(false);
+        setCompleting(false);
+      }, 300);
+      return () => clearTimeout(t);
+    }
+  }, [navigation.state]);
+
+  if (!show) return null;
 
   return (
-    <div className="h-0.5 w-full bg-garden-100 dark:bg-garden-900 overflow-hidden fixed top-0 left-0 z-50">
-      <div className="animate-progress origin-[0%_50%] w-full h-full bg-garden-500" />
+    <div className={`h-0.5 w-full bg-garden-100 dark:bg-garden-900 overflow-hidden fixed top-0 left-0 z-50 ${
+      completing ? "animate-[fadeOut_0.3s_ease-in_forwards]" : ""
+    }`}>
+      <div className={`w-full h-full bg-garden-500 ${
+        completing ? "!w-full transition-none" : "animate-progress origin-[0%_50%]"
+      }`} />
     </div>
   );
 }

@@ -1015,8 +1015,9 @@ export function YardEditor({
   // --- Render ---
 
   return (
+    <div className="h-screen w-full flex overflow-hidden">
     <div
-      className="h-screen w-full overflow-hidden relative"
+      className="flex-1 h-full overflow-hidden relative"
       ref={containerRef}
     >
       <svg
@@ -1277,18 +1278,59 @@ export function YardEditor({
         )}
       </div>
 
-      {/* Properties + plantings panel — right side */}
-      {selected && (
-        <div className="absolute top-14 right-3 bottom-8 z-10 w-72 pointer-events-none">
-          <div className="pointer-events-auto space-y-3 max-h-full overflow-y-auto">
-            <PropertiesPanel
-              element={selected}
-              onUpdate={(updates) => handleUpdateElement(selected.id, updates)}
-              onDelete={() => handleDelete(selected.id)}
-              onClose={() => setSelectedId(null)}
-            />
-            {(SHAPE_CONFIG[selected.shapeType as ShapeType]?.plantable ??
-              false) && (
+      {/* Yard settings modal */}
+      {showSettings && (
+        <YardSettingsModal
+          yard={yard}
+          onClose={() => setShowSettings(false)}
+          onSave={(updated) => setYard((prev) => ({ ...prev, ...updated }))}
+        />
+      )}
+    </div>
+
+      {/* Properties + plantings panel — fixed right sidebar */}
+      {selected && (() => {
+        const config = SHAPE_CONFIG[selected.shapeType as ShapeType] ?? SHAPE_CONFIG.rectangle;
+        const isPlantable = config.plantable ?? false;
+        return (
+        <div className="w-72 h-full border-l border-earth-200 dark:border-gray-700 bg-white dark:bg-gray-800 overflow-y-auto shrink-0 flex flex-col">
+          {/* Sticky header */}
+          <div className="sticky top-0 z-10 bg-white dark:bg-gray-800 border-b border-earth-200 dark:border-gray-700 px-4 py-3 flex items-center justify-between">
+            <div className="flex items-center gap-2 min-w-0">
+              <span
+                className="w-3 h-3 rounded-sm shrink-0"
+                style={{ backgroundColor: config.color, border: `1px solid ${config.borderColor}` }}
+              />
+              <span className="text-sm font-semibold text-gray-900 dark:text-gray-100 truncate">
+                {selected.label || config.label}
+              </span>
+            </div>
+            <div className="flex items-center gap-1 shrink-0">
+              <button
+                type="button"
+                className="p-1 text-gray-400 hover:text-red-500 dark:hover:text-red-400 rounded-md hover:bg-red-50 dark:hover:bg-red-900/30 transition cursor-pointer"
+                title="Delete element"
+                onClick={() => handleDelete(selected.id)}
+              >
+                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M3 6h18M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+                </svg>
+              </button>
+              <button
+                type="button"
+                className="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition cursor-pointer"
+                onClick={() => setSelectedId(null)}
+              >
+                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M18 6 6 18M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          {/* Plantings section */}
+          {isPlantable && (
+            <div className="px-4 py-3">
               <BedPlantingsPanel
                 element={selected}
                 plants={allPlants}
@@ -1347,19 +1389,20 @@ export function YardEditor({
                   );
                 }}
               />
-            )}
+            </div>
+          )}
+
+          {/* Bed details section */}
+          <div className="border-t border-earth-200 dark:border-gray-700 px-4 py-3">
+            <h3 className="text-xs font-medium text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-3">Bed Details</h3>
+            <PropertiesPanel
+              element={selected}
+              onUpdate={(updates) => handleUpdateElement(selected.id, updates)}
+            />
           </div>
         </div>
-      )}
-
-      {/* Yard settings modal */}
-      {showSettings && (
-        <YardSettingsModal
-          yard={yard}
-          onClose={() => setShowSettings(false)}
-          onSave={(updated) => setYard((prev) => ({ ...prev, ...updated }))}
-        />
-      )}
+        );
+      })()}
     </div>
   );
 }

@@ -3,7 +3,7 @@
 import React from "react";
 
 type ToastType = "success" | "error" | "info" | "warning";
-type Toast = { id: number; message: string; type: ToastType };
+type Toast = { id: number; message: string; type: ToastType; removing?: boolean };
 
 const ToastContext = React.createContext<{
   addToast: (message: string, type?: ToastType) => void;
@@ -35,13 +35,20 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
   const addToast = React.useCallback((message: string, type: ToastType = "success") => {
     const id = nextId++;
     setToasts((prev) => [...prev, { id, message, type }]);
+    // Start exit animation after 3s, remove after animation completes
     setTimeout(() => {
-      setToasts((prev) => prev.filter((t) => t.id !== id));
+      setToasts((prev) => prev.map((t) => t.id === id ? { ...t, removing: true } : t));
+      setTimeout(() => {
+        setToasts((prev) => prev.filter((t) => t.id !== id));
+      }, 200);
     }, 3000);
   }, []);
 
   const removeToast = React.useCallback((id: number) => {
-    setToasts((prev) => prev.filter((t) => t.id !== id));
+    setToasts((prev) => prev.map((t) => t.id === id ? { ...t, removing: true } : t));
+    setTimeout(() => {
+      setToasts((prev) => prev.filter((t) => t.id !== id));
+    }, 200);
   }, []);
 
   return (
@@ -51,7 +58,11 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
         {toasts.map((toast) => (
           <div
             key={toast.id}
-            className={`pointer-events-auto flex items-center gap-2 rounded-lg border px-4 py-3 text-sm font-medium shadow-lg animate-[slideIn_0.2s_ease-out] ${TYPE_STYLES[toast.type]}`}
+            className={`pointer-events-auto flex items-center gap-2 rounded-lg border px-4 py-3 text-sm font-medium shadow-lg ${
+              toast.removing
+                ? "animate-[slideOut_0.2s_ease-in_forwards]"
+                : "animate-[slideIn_0.2s_ease-out]"
+            } ${TYPE_STYLES[toast.type]}`}
           >
             <svg
               className="w-4 h-4 shrink-0"
@@ -66,7 +77,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
             </svg>
             <span>{toast.message}</span>
             <button
-              className="ml-2 opacity-50 hover:opacity-100 transition-opacity"
+              className="ml-2 opacity-50 hover:opacity-100 transition-opacity cursor-pointer"
               onClick={() => removeToast(toast.id)}
             >
               <svg

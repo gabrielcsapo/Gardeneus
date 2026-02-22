@@ -24,6 +24,11 @@ const SHORTCUTS = [
 
 export function KeyboardShortcuts() {
   const [open, setOpen] = React.useState(false);
+  const [visible, setVisible] = React.useState(false);
+
+  React.useEffect(() => {
+    if (open) setVisible(true);
+  }, [open]);
 
   React.useEffect(() => {
     let gPressed = false;
@@ -33,26 +38,21 @@ export function KeyboardShortcuts() {
       const target = e.target as HTMLElement;
       const isInput = target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.tagName === "SELECT" || target.isContentEditable;
 
-      // ? to show help (shift + /)
       if (e.key === "?" && !isInput) {
         e.preventDefault();
         setOpen((prev) => !prev);
         return;
       }
 
-      // Escape to close
       if (e.key === "Escape" && open) {
         setOpen(false);
         return;
       }
 
-      // / to open command palette (handled by command palette itself, but also from here)
       if (e.key === "/" && !isInput && !open) {
-        // Command palette handles this
         return;
       }
 
-      // G + key navigation
       if (!isInput && !open) {
         if (e.key === "g" || e.key === "G") {
           if (!gPressed) {
@@ -84,13 +84,29 @@ export function KeyboardShortcuts() {
     };
   }, [open]);
 
-  if (!open) return null;
+  const handleAnimationEnd = () => {
+    if (!open) setVisible(false);
+  };
+
+  if (!visible) return null;
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center p-4" onClick={() => setOpen(false)}>
-      <div className="absolute inset-0 bg-black/40" />
+    <div
+      className="fixed inset-0 z-[60] flex items-center justify-center p-4"
+      onClick={() => setOpen(false)}
+      onAnimationEnd={handleAnimationEnd}
+    >
+      <div className={`absolute inset-0 backdrop-blur-sm ${
+        open
+          ? "bg-black/40 animate-[fadeIn_0.15s_ease-out_forwards]"
+          : "bg-black/40 animate-[fadeOut_0.15s_ease-in_forwards]"
+      }`} />
       <div
-        className="relative bg-white dark:bg-gray-800 rounded-2xl border border-earth-200 dark:border-gray-700 shadow-2xl w-full max-w-md overflow-hidden"
+        className={`relative bg-white dark:bg-gray-800 rounded-2xl border border-earth-200 dark:border-gray-700 shadow-2xl w-full max-w-md overflow-hidden ${
+          open
+            ? "animate-[scaleIn_0.15s_ease-out]"
+            : "animate-[scaleOut_0.15s_ease-in_forwards]"
+        }`}
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between px-5 py-4 border-b border-earth-100 dark:border-gray-700">

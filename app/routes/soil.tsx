@@ -40,7 +40,7 @@ const Component = async () => {
       </nav>
 
       <div className="mb-6">
-        <h1 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Soil Health</h1>
+        <h1 className="text-xl font-semibold text-gray-900 dark:text-gray-100" style={{ viewTransitionName: "page-title" }}>Soil Health</h1>
         <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
           Track soil test results and monitor nutrient levels per bed.
         </p>

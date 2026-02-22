@@ -93,7 +93,7 @@ export function SoilProfileList({
         <button
           type="button"
           onClick={() => setShowAdd(!showAdd)}
-          className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium rounded-lg bg-garden-600 text-white hover:bg-garden-700 transition cursor-pointer"
+          className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium rounded-lg bg-garden-600 text-white hover:bg-garden-700 transition cursor-pointer press"
         >
           <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <line x1="12" y1="5" x2="12" y2="19" />
@@ -258,7 +258,7 @@ export function SoilProfileList({
 function SubmitBtn() {
   const status = useFormStatus();
   return (
-    <button type="submit" disabled={status.pending} className="inline-flex items-center gap-2 rounded-lg bg-garden-600 px-3 py-1.5 text-sm font-medium text-white shadow-sm hover:bg-garden-700 disabled:opacity-50 transition-colors cursor-pointer">
+    <button type="submit" disabled={status.pending} className="inline-flex items-center gap-2 rounded-lg bg-garden-600 px-3 py-1.5 text-sm font-medium text-white shadow-sm hover:bg-garden-700 disabled:opacity-50 transition-colors cursor-pointer press">
       {status.pending ? "Adding..." : "Add Test"}
     </button>
   );

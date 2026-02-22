@@ -54,7 +54,7 @@ const Component = async () => {
 
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Garden Log</h1>
+          <h1 className="text-xl font-semibold text-gray-900 dark:text-gray-100" style={{ viewTransitionName: "page-title" }}>Garden Log</h1>
           <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
             Track activities, observations, and harvests in your garden.
           </p>

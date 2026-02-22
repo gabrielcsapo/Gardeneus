@@ -41,12 +41,17 @@ const ACTIONS = [
 
 export function QuickActionFab() {
   const [open, setOpen] = React.useState(false);
+  const [visible, setVisible] = React.useState(false);
   const navigate = useNavigate();
   const location = useLocation();
   const fabRef = React.useRef<HTMLDivElement>(null);
 
   // Hide on yard editor (it has its own toolbar)
-  if (location.pathname.match(/^\/yard\/\d+/)) return null;
+  const hidden = /^\/yard\/\d+/.test(location.pathname);
+
+  React.useEffect(() => {
+    if (open) setVisible(true);
+  }, [open]);
 
   // Close on click outside
   React.useEffect(() => {
@@ -65,13 +70,19 @@ export function QuickActionFab() {
     setOpen(false);
   }, [location.pathname]);
 
+  const handleAnimationEnd = () => {
+    if (!open) setVisible(false);
+  };
+
+  if (hidden) return null;
+
   return (
     <div ref={fabRef} className="fixed bottom-6 right-6 z-50 lg:hidden flex flex-col-reverse items-end gap-2">
       {/* Main FAB button */}
       <button
         type="button"
         onClick={() => setOpen(!open)}
-        className={`w-14 h-14 rounded-full bg-garden-600 text-white shadow-lg hover:bg-garden-700 transition-all cursor-pointer flex items-center justify-center ${
+        className={`w-14 h-14 rounded-full bg-garden-600 text-white shadow-lg hover:bg-garden-700 transition-all duration-200 cursor-pointer press flex items-center justify-center ${
           open ? "rotate-45" : ""
         }`}
       >
@@ -90,15 +101,18 @@ export function QuickActionFab() {
       </button>
 
       {/* Action buttons */}
-      {open &&
+      {visible &&
         ACTIONS.map((action, i) => (
           <button
             key={action.label}
             type="button"
-            className={`flex items-center gap-2.5 pl-4 pr-3 py-2.5 rounded-full ${action.color} text-white shadow-lg text-sm font-medium cursor-pointer`}
+            className={`flex items-center gap-2.5 pl-4 pr-3 py-2.5 rounded-full ${action.color} text-white shadow-lg text-sm font-medium cursor-pointer press`}
             style={{
-              animation: `slideUp 0.15s ease-out ${i * 0.04}s both`,
+              animation: open
+                ? `slideUp 0.15s ease-out ${i * 0.04}s both`
+                : `slideDown 0.12s ease-in ${(ACTIONS.length - 1 - i) * 0.03}s both`,
             }}
+            onAnimationEnd={i === (open ? ACTIONS.length - 1 : 0) ? handleAnimationEnd : undefined}
             onClick={() => {
               setOpen(false);
               navigate(action.href);

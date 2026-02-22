@@ -5,14 +5,27 @@ import { SHAPE_CONFIG } from "../../lib/shapes.ts";
 import type { ShapeType } from "../../lib/shapes.ts";
 import type { YardElement, PlantInfo, Planting } from "../../lib/yard-types.ts";
 import { CELL_SIZE } from "../../lib/yard-types.ts";
-import { getPlantIconRenderer } from "../../lib/plant-icons/index.tsx";
 import { useTheme } from "../theme-provider.client";
+
+// Distinct, bright colors that stand out against any bed fill color
+export const PLANT_PALETTE = [
+  "#16a34a", // green-600
+  "#d97706", // amber-600
+  "#7c3aed", // violet-600
+  "#dc2626", // red-600
+  "#0891b2", // cyan-600
+  "#db2777", // pink-600
+  "#ea580c", // orange-600
+  "#0d9488", // teal-600
+];
 
 type PlantSlot = {
   plantName: string;
   plantId: number;
-  totalQuantity: number;
-  renderer: (() => React.JSX.Element) | null;
+  quantity: number;
+  spacingInches: number;
+  colorIdx: number;
+  initial: string;
 };
 
 function aggregatePlantings(
@@ -20,19 +33,23 @@ function aggregatePlantings(
   plants: PlantInfo[],
 ): PlantSlot[] {
   const map = new Map<number, PlantSlot>();
+  let colorIdx = 0;
   for (const p of plantings) {
     const existing = map.get(p.plantId);
     if (existing) {
-      existing.totalQuantity += p.quantity ?? 1;
+      existing.quantity += p.quantity ?? 1;
     } else {
       const plant = plants.find((pl) => pl.id === p.plantId);
       if (!plant) continue;
       map.set(p.plantId, {
         plantName: plant.name,
         plantId: plant.id,
-        totalQuantity: p.quantity ?? 1,
-        renderer: getPlantIconRenderer(plant.name),
+        quantity: p.quantity ?? 1,
+        spacingInches: plant.spacingInches ?? 12,
+        colorIdx: colorIdx % PLANT_PALETTE.length,
+        initial: plant.name.charAt(0).toUpperCase(),
       });
+      colorIdx++;
     }
   }
   return Array.from(map.values());
@@ -51,15 +68,16 @@ function getLayoutRegion(
 
   if (shapeType === "hugelkultur") {
     return {
-      lx: x + w * 0.25,
-      ly: y + h * 0.35,
-      lw: w * 0.5,
-      lh: h * 0.35,
+      lx: x + w * 0.15,
+      ly: y + h * 0.2,
+      lw: w * 0.7,
+      lh: h * 0.5,
     };
   }
 
   if (isCircular) {
-    const inset = 0.28;
+    // Inscribed rectangle in ellipse at ~80% radius uses most plantable area
+    const inset = 0.18;
     return {
       lx: x + w * inset,
       ly: y + h * inset,
@@ -68,8 +86,7 @@ function getLayoutRegion(
     };
   }
 
-  // Rectangular shapes (rectangle, container)
-  const pad = 6;
+  const pad = 8;
   return {
     lx: x + pad,
     ly: y + pad,
@@ -78,44 +95,98 @@ function getLayoutRegion(
   };
 }
 
-function getIconSize(minDim: number): { size: number; gap: number } {
-  if (minDim < 80) return { size: 14, gap: 2 };
-  if (minDim < 150) return { size: 18, gap: 3 };
-  if (minDim < 250) return { size: 22, gap: 4 };
-  return { size: 26, gap: 5 };
-}
+type PlantDot = {
+  x: number;
+  y: number;
+  color: string;
+  initial: string;
+  plantName: string;
+};
 
-function computeIconPositions(
+function computePlantingGrid(
   regionX: number,
   regionY: number,
   regionW: number,
   regionH: number,
-  count: number,
-  iconSize: number,
-  gap: number,
-): { x: number; y: number }[] {
-  const cols = Math.max(1, Math.floor(regionW / (iconSize + gap)));
-  const rows = Math.max(1, Math.floor(regionH / (iconSize + gap)));
-  const maxSlots = cols * rows;
-  const visibleCount = Math.min(count, maxSlots);
-
-  const actualCols = Math.min(visibleCount, cols);
-  const actualRows = Math.ceil(visibleCount / cols);
-  const gridW = actualCols * (iconSize + gap) - gap;
-  const gridH = actualRows * (iconSize + gap) - gap;
-  const offsetX = regionX + (regionW - gridW) / 2;
-  const offsetY = regionY + (regionH - gridH) / 2;
-
-  const positions: { x: number; y: number }[] = [];
-  for (let i = 0; i < visibleCount; i++) {
-    const col = i % cols;
-    const row = Math.floor(i / cols);
-    positions.push({
-      x: offsetX + col * (iconSize + gap),
-      y: offsetY + row * (iconSize + gap),
-    });
+  slots: PlantSlot[],
+): { dots: PlantDot[]; overflow: number } {
+  if (regionW <= 0 || regionH <= 0 || slots.length === 0) {
+    return { dots: [], overflow: 0 };
   }
-  return positions;
+
+  const dots: PlantDot[] = [];
+  let totalOverflow = 0;
+
+  // Calculate total weight for proportional vertical allocation
+  // cols/rows use fencing formula: n plants need (n-1) * spacing width,
+  // so n = floor(width / spacing) + 1
+  const slotWeights = slots.map((s) => {
+    const spacingPx = Math.max(16, (s.spacingInches / 12) * CELL_SIZE);
+    const cols = Math.max(1, Math.floor(regionW / spacingPx) + 1);
+    const rowsNeeded = Math.ceil(s.quantity / cols);
+    return rowsNeeded * spacingPx;
+  });
+  const totalWeight = slotWeights.reduce((a, b) => a + b, 0);
+
+  let currentY = regionY;
+
+  for (let si = 0; si < slots.length; si++) {
+    const slot = slots[si];
+    const color = PLANT_PALETTE[slot.colorIdx];
+    const spacingPx = Math.max(16, (slot.spacingInches / 12) * CELL_SIZE);
+
+    // Allocate proportional height, but at least one row
+    const allocatedH =
+      totalWeight > 0
+        ? Math.max(spacingPx, (slotWeights[si] / totalWeight) * regionH)
+        : regionH / slots.length;
+
+    const sectionH = Math.min(allocatedH, regionY + regionH - currentY);
+    if (sectionH < spacingPx * 0.5) {
+      totalOverflow += slot.quantity;
+      continue;
+    }
+
+    // Fencing: n plants across need (n-1) gaps, so n = floor(W / spacing) + 1
+    const cols = Math.max(1, Math.floor(regionW / spacingPx) + 1);
+    const rows = Math.max(1, Math.floor(sectionH / spacingPx) + 1);
+    // Grid span is (n-1) * spacing, centered within the section
+    const gridW = (cols - 1) * spacingPx;
+    const gridH = (rows - 1) * spacingPx;
+    const offsetX = regionX + (regionW - gridW) / 2;
+    const offsetY = currentY + (sectionH - gridH) / 2;
+
+    let placed = 0;
+    for (let row = 0; row < rows && placed < slot.quantity; row++) {
+      // Stagger odd rows for hex-like packing
+      const stagger = row % 2 === 1 ? spacingPx * 0.3 : 0;
+      for (let col = 0; col < cols && placed < slot.quantity; col++) {
+        const px = offsetX + col * spacingPx + stagger;
+        const py = offsetY + row * spacingPx;
+
+        // Make sure dot is within region
+        if (px < regionX || px > regionX + regionW) continue;
+        if (py < regionY || py > regionY + regionH) continue;
+
+        dots.push({
+          x: px,
+          y: py,
+          color,
+          initial: slot.initial,
+          plantName: slot.plantName,
+        });
+        placed++;
+      }
+    }
+
+    if (placed < slot.quantity) {
+      totalOverflow += slot.quantity - placed;
+    }
+
+    currentY += sectionH;
+  }
+
+  return { dots, overflow: totalOverflow };
 }
 
 export const BedPlantIcons = React.memo(function BedPlantIcons({
@@ -139,8 +210,7 @@ export const BedPlantIcons = React.memo(function BedPlantIcons({
   const h = element.height * CELL_SIZE;
   const minDim = Math.min(w, h);
 
-  // Too small to show icons
-  if (minDim < 40) return null;
+  if (minDim < 30) return null;
 
   const rotation = element.rotation ?? 0;
   const cx = x + w / 2;
@@ -149,12 +219,15 @@ export const BedPlantIcons = React.memo(function BedPlantIcons({
   const slots = aggregatePlantings(plantings, plants);
   if (slots.length === 0) return null;
 
-  const iconColor = isDark ? config.color : config.borderColor;
+  const outlineColor = isDark ? "#1f2937" : "#ffffff";
 
-  // Tiny bed — show single centered icon
+  // Very tiny bed — show colored summary dots
   if (minDim < 70) {
-    const slot = slots[0];
-    const icoSize = 14;
+    const dotR = 5;
+    const totalDots = Math.min(slots.length, 4);
+    const totalW = totalDots * (dotR * 2 + 3) - 3;
+    const startX = cx - totalW / 2;
+
     return (
       <g
         pointerEvents="none"
@@ -162,73 +235,72 @@ export const BedPlantIcons = React.memo(function BedPlantIcons({
           rotation !== 0 ? `rotate(${rotation}, ${cx}, ${cy})` : undefined
         }
       >
-        {slot.renderer ? (
-          <svg
-            x={cx - icoSize / 2}
-            y={cy + 6}
-            width={icoSize}
-            height={icoSize}
-            viewBox="0 0 24 24"
-            fill="none"
-            opacity={0.55}
-            style={{ color: iconColor }}
-          >
-            {slot.renderer()}
-          </svg>
-        ) : (
+        {slots.slice(0, totalDots).map((slot, i) => (
           <circle
-            cx={cx}
-            cy={cy + 6 + icoSize / 2}
-            r={4}
-            fill={iconColor}
-            opacity={0.4}
+            key={slot.plantId}
+            cx={startX + i * (dotR * 2 + 3) + dotR}
+            cy={cy + 10}
+            r={dotR}
+            fill={PLANT_PALETTE[slot.colorIdx]}
+            stroke={outlineColor}
+            strokeWidth={1.5}
+            opacity={0.9}
           />
-        )}
-        {slots.length > 1 && (
+        ))}
+        {slots.length > totalDots && (
           <text
-            x={cx + icoSize / 2 + 3}
-            y={cy + 6 + icoSize / 2 + 2}
-            fontSize={7}
-            fill={iconColor}
-            opacity={0.6}
+            x={cx + totalW / 2 + 6}
+            y={cy + 13}
+            fontSize={8}
+            fill={isDark ? "#9ca3af" : "#6b7280"}
             fontWeight="600"
             textAnchor="start"
           >
-            +{slots.length - 1}
+            +{slots.length - totalDots}
           </text>
         )}
       </g>
     );
   }
 
+  // Get layout region for planting dots
   const { lx, ly, lw, lh } = getLayoutRegion(element.shapeType, x, y, w, h);
-  const { size: iconSize, gap } = getIconSize(minDim);
 
-  // Reserve label area: shift icons to the lower portion if there's a label
-  let layoutY = ly;
-  let layoutH = lh;
-  if (element.label) {
-    const labelBand = 14;
-    const midY = y + h / 2;
-    // Place icons below label center
-    const belowLabelY = midY + labelBand / 2;
-    if (belowLabelY > ly && belowLabelY < ly + lh) {
-      layoutH = ly + lh - belowLabelY;
-      layoutY = belowLabelY;
-    }
-  }
-
-  const positions = computeIconPositions(
+  // Compute grid across the full layout region
+  const { dots: allDots, overflow: gridOverflow } = computePlantingGrid(
     lx,
-    layoutY,
+    ly,
     lw,
-    layoutH,
-    slots.length,
-    iconSize,
-    gap,
+    lh,
+    slots,
   );
 
-  const overflow = slots.length - positions.length;
+  // Filter dots: remove those overlapping the label or outside circular shapes
+  const labelCenterY = y + h / 2;
+  const labelExclusion = element.label ? 12 : 0;
+  const isCircular = ["circle", "keyhole", "spiral", "mandala"].includes(element.shapeType);
+  const dots = allDots.filter((d) => {
+    // Skip dots too close to the label text
+    if (labelExclusion > 0 && Math.abs(d.y - labelCenterY) < labelExclusion) {
+      return false;
+    }
+    // For circular shapes, check the dot is inside the ellipse
+    if (isCircular) {
+      const dx = (d.x - cx) / (w / 2);
+      const dy = (d.y - cy) / (h / 2);
+      if (dx * dx + dy * dy > 0.85) return false; // ~92% radius to keep dots inside visually
+    }
+    return true;
+  });
+  const overflow = gridOverflow + (allDots.length - dots.length);
+
+  // Calculate dot radius based on bed size and spacing
+  const avgSpacingPx =
+    slots.reduce((sum, s) => sum + (s.spacingInches / 12) * CELL_SIZE, 0) /
+    slots.length;
+  const dotR = Math.max(4, Math.min(14, avgSpacingPx * 0.3));
+  const showInitials = dotR >= 8;
+  const fontSize = Math.max(6, dotR * 0.9);
 
   return (
     <g
@@ -237,75 +309,93 @@ export const BedPlantIcons = React.memo(function BedPlantIcons({
         rotation !== 0 ? `rotate(${rotation}, ${cx}, ${cy})` : undefined
       }
     >
-      {positions.map((pos, i) => {
-        const slot = slots[i];
-        if (!slot) return null;
-        return (
-          <g key={slot.plantId}>
-            {slot.renderer ? (
-              <svg
-                x={pos.x}
-                y={pos.y}
-                width={iconSize}
-                height={iconSize}
-                viewBox="0 0 24 24"
-                fill="none"
-                opacity={0.6}
-                style={{ color: iconColor }}
-              >
-                {slot.renderer()}
-              </svg>
-            ) : (
-              <circle
-                cx={pos.x + iconSize / 2}
-                cy={pos.y + iconSize / 2}
-                r={iconSize * 0.3}
-                fill={iconColor}
-                opacity={0.4}
-              />
-            )}
-            {slot.totalQuantity > 1 && (
-              <g>
+      {/* Plant position dots */}
+      {dots.map((dot, i) => (
+        <g key={i}>
+          <circle
+            cx={dot.x}
+            cy={dot.y}
+            r={dotR}
+            fill={dot.color}
+            stroke={outlineColor}
+            strokeWidth={1.5}
+            opacity={0.85}
+          />
+          {showInitials && (
+            <text
+              x={dot.x}
+              y={dot.y + fontSize * 0.35}
+              textAnchor="middle"
+              fontSize={fontSize}
+              fill="#ffffff"
+              fontWeight="700"
+              opacity={0.95}
+            >
+              {dot.initial}
+            </text>
+          )}
+        </g>
+      ))}
+
+      {/* Overflow indicator */}
+      {overflow > 0 && (
+        <g>
+          <rect
+            x={lx + lw - 28}
+            y={ly + lh - 14}
+            width={26}
+            height={13}
+            rx={6}
+            fill={isDark ? "#374151" : "#ffffff"}
+            stroke={isDark ? "#6b7280" : "#d1d5db"}
+            strokeWidth={0.5}
+            opacity={0.9}
+          />
+          <text
+            x={lx + lw - 15}
+            y={ly + lh - 5}
+            textAnchor="middle"
+            fontSize={8}
+            fill={isDark ? "#d1d5db" : "#374151"}
+            fontWeight="600"
+          >
+            +{overflow}
+          </text>
+        </g>
+      )}
+
+      {/* Legend strip at bottom of bed for multiple plant types */}
+      {slots.length > 1 && minDim >= 120 && (
+        <g>
+          {slots.map((slot, i) => {
+            const legendX = lx + 4;
+            const legendY = ly + lh + 2 - (slots.length - i) * 11;
+            if (legendY < ly) return null;
+            return (
+              <g key={slot.plantId}>
                 <circle
-                  cx={pos.x + iconSize - 1}
-                  cy={pos.y + iconSize - 1}
-                  r={iconSize * 0.28}
-                  fill={isDark ? "#1f2937" : "white"}
-                  stroke={iconColor}
-                  strokeWidth={0.5}
+                  cx={legendX + 4}
+                  cy={legendY}
+                  r={3.5}
+                  fill={PLANT_PALETTE[slot.colorIdx]}
+                  stroke={outlineColor}
+                  strokeWidth={1}
                   opacity={0.9}
                 />
                 <text
-                  x={pos.x + iconSize - 1}
-                  y={pos.y + iconSize + 0.5}
-                  textAnchor="middle"
-                  fontSize={iconSize * 0.32}
-                  fill={iconColor}
-                  fontWeight="600"
+                  x={legendX + 10}
+                  y={legendY + 3}
+                  fontSize={7}
+                  fill={isDark ? "#d1d5db" : "#374151"}
+                  fontWeight="500"
+                  opacity={0.8}
                 >
-                  {slot.totalQuantity > 99 ? "99" : slot.totalQuantity}
+                  {slot.plantName} x{slot.quantity}
                 </text>
               </g>
-            )}
-          </g>
-        );
-      })}
-
-      {overflow > 0 && positions.length > 0 && (
-        <text
-          x={
-            positions[positions.length - 1].x + iconSize + gap
-          }
-          y={
-            positions[positions.length - 1].y + iconSize / 2 + 3
-          }
-          fontSize={Math.max(8, iconSize * 0.4)}
-          fill={iconColor}
-          opacity={0.6}
-          fontWeight="600"
-        >
-          +{overflow}
-        </text>
+            );
+          })}
+        </g>
       )}
     </g>
   );

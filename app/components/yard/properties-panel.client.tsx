@@ -1,7 +1,5 @@
 "use client";
 
-import { SHAPE_CONFIG } from "../../lib/shapes.ts";
-import type { ShapeType } from "../../lib/shapes.ts";
 import type { YardElement } from "../../lib/yard-types.ts";
 
 const inputClass =
@@ -10,53 +8,12 @@ const inputClass =
 export function PropertiesPanel({
   element,
   onUpdate,
-  onDelete,
-  onClose,
 }: {
   element: YardElement;
   onUpdate: (updates: Record<string, string>) => void;
-  onDelete: () => void;
-  onClose?: () => void;
 }) {
-  const config =
-    SHAPE_CONFIG[element.shapeType as ShapeType] ?? SHAPE_CONFIG.rectangle;
-
   return (
-    <div className="bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm rounded-xl border border-earth-200 dark:border-gray-700 shadow-lg p-4 space-y-4">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <span
-            className="w-3 h-3 rounded-sm"
-            style={{
-              backgroundColor: config.color,
-              border: `1px solid ${config.borderColor}`,
-            }}
-          />
-          <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">
-            {config.label}
-          </h3>
-        </div>
-        {onClose && (
-          <button
-            type="button"
-            className="p-0.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 cursor-pointer"
-            onClick={onClose}
-          >
-            <svg
-              className="w-4 h-4"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <path d="M18 6 6 18M6 6l12 12" />
-            </svg>
-          </button>
-        )}
-      </div>
-
+    <div className="space-y-4">
       <div>
         <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">
           Label
@@ -258,22 +215,6 @@ export function PropertiesPanel({
         </label>
       </div>
 
-      <div className="text-xs text-gray-400 space-y-1">
-        <p>
-          Position: ({element.x}, {element.y})
-        </p>
-        <p>
-          Size: {element.width} x {element.height} ft
-        </p>
-        <p>Area: ~{Math.round(element.width * element.height)} sq ft</p>
-      </div>
-
-      <button
-        className="w-full rounded-lg border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/30 px-3 py-1.5 text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/50 transition cursor-pointer"
-        onClick={onDelete}
-      >
-        Delete Element
-      </button>
     </div>
   );
 }

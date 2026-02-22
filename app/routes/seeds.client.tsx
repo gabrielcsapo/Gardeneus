@@ -2,6 +2,7 @@
 
 import React from "react";
 import { useFormStatus } from "react-dom";
+import { useSearchParams } from "react-router";
 import { useToast } from "../components/toast.client";
 
 export function ExportButton({
@@ -81,7 +82,15 @@ export function SeedInventoryList({
   deleteAction: (formData: FormData) => Promise<{ success: boolean }>;
 }) {
   const [showAdd, setShowAdd] = React.useState(false);
-  const [search, setSearch] = React.useState("");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const search = searchParams.get("q") || "";
+  const setSearch = (q: string) => {
+    if (q) {
+      setSearchParams({ q }, { replace: true });
+    } else {
+      setSearchParams({}, { replace: true });
+    }
+  };
   const { addToast } = useToast();
 
   const filtered = seeds.filter((s) => {
@@ -110,7 +119,7 @@ export function SeedInventoryList({
         <button
           type="button"
           onClick={() => setShowAdd(!showAdd)}
-          className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium rounded-lg bg-garden-600 text-white hover:bg-garden-700 transition cursor-pointer"
+          className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium rounded-lg bg-garden-600 text-white hover:bg-garden-700 transition cursor-pointer press"
         >
           <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <line x1="12" y1="5" x2="12" y2="19" />
@@ -245,7 +254,7 @@ function SeedCard({
   const { addToast } = useToast();
 
   return (
-    <div className={`flex items-center gap-3 p-3 rounded-lg ${
+    <div className={`flex items-center gap-3 p-3 rounded-lg card-hover ${
       seed.isExpiring
         ? "bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800"
         : "bg-white dark:bg-gray-800 border border-earth-200 dark:border-gray-700"
@@ -303,7 +312,7 @@ function AddButton() {
     <button
       type="submit"
       disabled={status.pending}
-      className="inline-flex items-center gap-2 rounded-lg bg-garden-600 px-3 py-1.5 text-sm font-medium text-white shadow-sm hover:bg-garden-700 disabled:opacity-50 transition-colors cursor-pointer"
+      className="inline-flex items-center gap-2 rounded-lg bg-garden-600 px-3 py-1.5 text-sm font-medium text-white shadow-sm hover:bg-garden-700 disabled:opacity-50 transition-colors cursor-pointer press"
     >
       {status.pending ? "Adding..." : "Add Seed"}
     </button>

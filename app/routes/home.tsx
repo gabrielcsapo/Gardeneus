@@ -247,7 +247,7 @@ const Component = async () => {
   return (
     <main className="mx-auto max-w-6xl px-6 py-8">
       <div className="mb-8">
-        <h1 className="text-2xl font-semibold text-gray-900 dark:text-gray-100">Dashboard</h1>
+        <h1 className="text-2xl font-semibold text-gray-900 dark:text-gray-100" style={{ viewTransitionName: "page-title" }}>Dashboard</h1>
         <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Your garden at a glance.</p>
       </div>
 
