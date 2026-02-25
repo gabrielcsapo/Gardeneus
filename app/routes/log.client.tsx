@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { useSearchParams } from "react-router";
+import { useSearchParams } from "react-flight-router/client";
 import { useToast } from "../components/toast.client";
 import { PlantIcon } from "../lib/plant-icons";
 

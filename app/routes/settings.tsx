@@ -1,4 +1,4 @@
-import { Link } from "react-router";
+import { Link } from "react-flight-router/client";
 import { db } from "../db/index.ts";
 import { settings } from "../db/schema.ts";
 import { USDA_ZONES } from "../lib/zones.ts";

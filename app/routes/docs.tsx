@@ -1,4 +1,4 @@
-import { Link } from "react-router";
+import { Link } from "react-flight-router/client";
 import { apiGroups } from "../api/docs-schema.ts";
 import { ApiDocs } from "./docs.client.tsx";
 

@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { useNavigate } from "react-router";
+import { useRouter } from "react-flight-router/client";
 
 export type SearchEntry = {
   id: string;
@@ -66,7 +66,7 @@ export function CommandPalette({ entries }: CommandPaletteProps) {
   const [selectedIndex, setSelectedIndex] = React.useState(0);
   const inputRef = React.useRef<HTMLInputElement>(null);
   const listRef = React.useRef<HTMLDivElement>(null);
-  const navigate = useNavigate();
+  const { navigate } = useRouter();
 
   // Cmd+K / Ctrl+K to open, / to open from anywhere
   React.useEffect(() => {

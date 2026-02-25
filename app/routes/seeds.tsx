@@ -1,4 +1,4 @@
-import { Link } from "react-router";
+import { Link } from "react-flight-router/client";
 import { db } from "../db/index.ts";
 import { seedInventory, plants } from "../db/schema.ts";
 import { eq, sql } from "drizzle-orm";

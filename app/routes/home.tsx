@@ -1,4 +1,4 @@
-import { Link } from "react-router";
+import { Link } from "react-flight-router/client";
 import { PlantIcon } from "../lib/plant-icons";
 import { db } from "../db/index.ts";
 import { plants, plantings, settings, yards, yardElements, logEntries, seedInventory, soilProfiles } from "../db/schema.ts";

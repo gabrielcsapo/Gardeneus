@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Link, useNavigate } from "react-router";
+import { Link, useRouter } from "react-flight-router/client";
 import { SHAPE_CONFIG } from "../lib/shapes.ts";
 import type { ShapeType } from "../lib/shapes.ts";
 import type {
@@ -76,7 +76,7 @@ export function YardListPage({
   createYardAction,
 }: {
   yards: YardSummary[];
-  createYardAction: (formData: FormData) => Promise<void>;
+  createYardAction: (formData: FormData) => Promise<number>;
 }) {
   const [showCreateForm, setShowCreateForm] = React.useState(yards.length === 0);
 
@@ -192,8 +192,15 @@ function acresToDimensions(acres: number): { w: number; h: number } {
 export function CreateYardForm({
   action,
 }: {
-  action: (formData: FormData) => Promise<void>;
+  action: (formData: FormData) => Promise<number>;
 }) {
+  const { navigate } = useRouter();
+
+  const wrappedAction = async (formData: FormData) => {
+    const newId = await action(formData);
+    navigate(`/yard/${newId}`);
+  };
+
   const [sizeMode, setSizeMode] = React.useState<SizeMode>("dimensions");
   const [widthFt, setWidthFt] = React.useState(50);
   const [heightFt, setHeightFt] = React.useState(40);
@@ -217,7 +224,7 @@ export function CreateYardForm({
   const totalAcres = (totalSqft / 43560).toFixed(3);
 
   return (
-    <form action={action} className="space-y-4 text-left">
+    <form action={wrappedAction} className="space-y-4 text-left">
       <input type="hidden" name="widthFt" value={effectiveWidth} />
       <input type="hidden" name="heightFt" value={effectiveHeight} />
 
@@ -358,7 +365,7 @@ function YardSettingsModal({
   const [saving, setSaving] = React.useState(false);
   const { addToast } = useToast();
   const confirm = useConfirm();
-  const navigate = useNavigate();
+  const { navigate } = useRouter();
 
   async function handleSave() {
     setSaving(true);

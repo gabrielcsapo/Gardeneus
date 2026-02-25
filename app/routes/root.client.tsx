@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Link, useLocation, useNavigation, useRouteError } from "react-router";
+import { Link, useLocation, useNavigation } from "react-flight-router/client";
 import { useTheme } from "../components/theme-provider.client";
 
 const NAV_ITEMS = [
@@ -411,8 +411,7 @@ export function GlobalNavigationLoadingBar() {
   );
 }
 
-export function DumpError() {
-  const error = useRouteError();
+export function DumpError({ error }: { error: Error }) {
   return (
     <main className="mx-auto max-w-2xl px-6 py-16 text-center">
       <h1 className="text-2xl font-semibold text-gray-900 dark:text-gray-100 mb-4">Something went wrong</h1>

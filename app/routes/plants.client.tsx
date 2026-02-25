@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { useSearchParams } from "react-router";
+import { useSearchParams } from "react-flight-router/client";
 import { PlantIcon } from "../lib/plant-icons";
 import { SlideOverPanel } from "../components/slide-over-panel.client";
 

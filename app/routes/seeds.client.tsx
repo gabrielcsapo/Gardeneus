@@ -2,7 +2,7 @@
 
 import React from "react";
 import { useFormStatus } from "react-dom";
-import { useSearchParams } from "react-router";
+import { useSearchParams } from "react-flight-router/client";
 import { useToast } from "../components/toast.client";
 
 export function ExportButton({

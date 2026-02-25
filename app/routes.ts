@@ -1,70 +1,71 @@
-import type { unstable_RSCRouteConfigEntry } from "react-router";
+import type { RouteConfig } from "react-flight-router/router";
 
-export const routes: unstable_RSCRouteConfigEntry[] = [
+export const routes: RouteConfig[] = [
   {
     id: "root",
     path: "",
-    lazy: () => import("./root"),
+    component: () => import("./root.js"),
+    notFound: () => import("./routes/not-found.js"),
     children: [
       {
         id: "home",
         index: true,
-        lazy: () => import("./routes/home"),
+        component: () => import("./routes/home.js"),
       },
       {
         id: "yards",
         path: "yard",
-        lazy: () => import("./routes/yard"),
+        component: () => import("./routes/yard.js"),
       },
       {
         id: "yard-editor",
         path: "yard/:id",
-        lazy: () => import("./routes/yard.$id"),
+        component: () => import("./routes/yard.$id.js"),
       },
       {
         id: "plants",
         path: "plants",
-        lazy: () => import("./routes/plants"),
+        component: () => import("./routes/plants.js"),
       },
       {
         id: "calendar",
         path: "calendar",
-        lazy: () => import("./routes/calendar"),
+        component: () => import("./routes/calendar.js"),
       },
       {
         id: "log",
         path: "log",
-        lazy: () => import("./routes/log"),
+        component: () => import("./routes/log.js"),
       },
       {
         id: "tasks",
         path: "tasks",
-        lazy: () => import("./routes/tasks"),
+        component: () => import("./routes/tasks.js"),
       },
       {
         id: "pests",
         path: "pests",
-        lazy: () => import("./routes/pests"),
+        component: () => import("./routes/pests.js"),
       },
       {
         id: "seeds",
         path: "seeds",
-        lazy: () => import("./routes/seeds"),
+        component: () => import("./routes/seeds.js"),
       },
       {
         id: "soil",
         path: "soil",
-        lazy: () => import("./routes/soil"),
+        component: () => import("./routes/soil.js"),
       },
       {
         id: "docs",
         path: "docs",
-        lazy: () => import("./routes/docs"),
+        component: () => import("./routes/docs.js"),
       },
       {
         id: "settings",
         path: "settings",
-        lazy: () => import("./routes/settings"),
+        component: () => import("./routes/settings.js"),
       },
     ],
   },

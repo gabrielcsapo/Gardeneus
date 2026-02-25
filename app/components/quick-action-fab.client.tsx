@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { useNavigate, useLocation } from "react-router";
+import { useRouter, useLocation } from "react-flight-router/client";
 
 const ACTIONS = [
   {
@@ -42,7 +42,7 @@ const ACTIONS = [
 export function QuickActionFab() {
   const [open, setOpen] = React.useState(false);
   const [visible, setVisible] = React.useState(false);
-  const navigate = useNavigate();
+  const { navigate } = useRouter();
   const location = useLocation();
   const fabRef = React.useRef<HTMLDivElement>(null);
 

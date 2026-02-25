@@ -1,7 +1,6 @@
 "use server";
 
 import { eq } from "drizzle-orm";
-import { redirect } from "react-router";
 import { db } from "../db/index.ts";
 import { yards, yardElements } from "../db/schema.ts";
 
@@ -18,8 +17,7 @@ export async function createYard(formData: FormData) {
     .insert(yards)
     .values({ name, widthFt, heightFt })
     .returning({ id: yards.id });
-  const newId = result[0].id;
-  throw redirect(`/yard/${newId}`);
+  return result[0].id;
 }
 
 export async function updateYard(formData: FormData) {

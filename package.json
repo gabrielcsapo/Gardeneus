@@ -1,14 +1,12 @@
 {
-  "name": "@vitejs/plugin-rsc-examples-react-router",
+  "name": "backyard-garden",
   "private": true,
   "license": "MIT",
   "type": "module",
   "scripts": {
-    "dev": "concurrently \"vite\" \"tsx watch app/api/index.ts\"",
-    "dev:web": "vite",
-    "dev:api": "tsx watch app/api/index.ts",
-    "build": "vite build",
-    "preview": "vite preview",
+    "dev": "vite",
+    "build": "react-flight-router build",
+    "start": "node dist/server.js",
     "start:api": "tsx app/api/index.ts",
     "db:push": "drizzle-kit push",
     "db:generate": "drizzle-kit generate",
@@ -23,7 +21,8 @@
     "hono": "^4.11.9",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
-    "react-router": "7.13.0"
+    "react-flight-router": "^0.1.6",
+    "react-server-dom-webpack": "^19.2.4"
   },
   "devDependencies": {
     "@tailwindcss/typography": "^0.5.19",
@@ -32,8 +31,6 @@
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "latest",
-    "@vitejs/plugin-rsc": "latest",
-    "concurrently": "^9.2.1",
     "drizzle-kit": "^0.31.9",
     "oxfmt": "^0.32.0",
     "oxlint": "^1.47.0",
@@ -41,5 +38,8 @@
     "tsx": "^4.21.0",
     "vite": "^8.0.0-beta.14",
     "wrangler": "^4.65.0"
+  },
+  "volta": {
+    "node": "25.7.0"
   }
 }

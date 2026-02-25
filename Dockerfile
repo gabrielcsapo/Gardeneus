@@ -15,4 +15,4 @@ RUN pnpm build
 
 EXPOSE 3000 3001
 
-CMD ["pnpm", "concurrently", "pnpm preview", "pnpm start:api"]
+CMD ["pnpm", "start"]

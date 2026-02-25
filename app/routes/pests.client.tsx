@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { useSearchParams } from "react-router";
+import { useSearchParams } from "react-flight-router/client";
 
 type Pest = {
   id: number;
