@@ -275,7 +275,7 @@ export function Sidebar() {
               className="w-6 h-6 shrink-0"
               viewBox="0 0 1024 1024"
               role="img"
-              aria-label="Backyard Garden"
+              aria-label="Gardeneus"
             >
               <circle cx="512" cy="512" r="480" fill="currentColor" />
               <g fill="white">
@@ -284,7 +284,7 @@ export function Sidebar() {
                 <path d="M512 560c-16 0-29-13-29-29 0-150 80-230 230-230 16 0 29 13 29 29 0 150-80 230-230 230zm29-58c72-9 125-55 143-137-88 12-134 65-143 137z" />
               </g>
             </svg>
-            <span>Backyard Garden</span>
+            <span>Gardeneus</span>
           </Link>
         </div>
 

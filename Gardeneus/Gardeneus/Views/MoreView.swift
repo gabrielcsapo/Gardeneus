@@ -1,6 +1,6 @@
 //
 //  MoreView.swift
-//  BackyardGarden
+//  Gardeneus
 //
 
 import SwiftUI

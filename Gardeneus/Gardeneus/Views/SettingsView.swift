@@ -80,7 +80,7 @@ struct SettingsView: View {
         } header: {
             Text("Server Connection")
         } footer: {
-            Text("Enter the URL of your Backyard Garden web server (e.g. http://192.168.1.100:3001)")
+            Text("Enter the URL of your Gardeneus web server (e.g. http://192.168.1.100:3001)")
         }
     }
 
@@ -206,7 +206,7 @@ struct SettingsView: View {
             HStack {
                 Text("Data Source")
                 Spacer()
-                Text("Backyard Garden Web")
+                Text("Gardeneus Web")
                     .foregroundStyle(.secondary)
             }
         }

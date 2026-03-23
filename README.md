@@ -1,4 +1,4 @@
-# Backyard Garden
+# Gardeneus
 
 A personal garden planning app for tracking your yard layout, plantings, and growing schedule. Built with React Server Components, Vite, and SQLite.
 

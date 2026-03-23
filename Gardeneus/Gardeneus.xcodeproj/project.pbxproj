@@ -7,26 +7,26 @@
 	objects = {
 
 /* Begin PBXFileReference section */
-		F91E18B92F3924900029A1F0 /* BackyardGarden.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = BackyardGarden.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		F91E18B92F3924900029A1F0 /* Gardeneus.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Gardeneus.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		F91E18C62F3924900029A1F0 /* Exceptions for "BackyardGarden" folder in "BackyardGarden" target */ = {
+		F91E18BC2F3924900029A1F0 /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
-				Info.plist,
+				"Info.plist",
 			);
-			target = F91E18B82F3924900029A1F0 /* BackyardGarden */;
+			target = F91E18B82F3924900029A1F0 /* Gardeneus */;
 		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		F91E18BB2F3924900029A1F0 /* BackyardGarden */ = {
+		F91E18BB2F3924900029A1F0 /* Gardeneus */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
-				F91E18C62F3924900029A1F0 /* Exceptions for "BackyardGarden" folder in "BackyardGarden" target */,
+				F91E18BC2F3924900029A1F0 /* PBXFileSystemSynchronizedBuildFileExceptionSet */,
 			);
-			path = BackyardGarden;
+			path = Gardeneus;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -45,7 +45,7 @@
 		F91E18B02F3924900029A1F0 = {
 			isa = PBXGroup;
 			children = (
-				F91E18BB2F3924900029A1F0 /* BackyardGarden */,
+				F91E18BB2F3924900029A1F0 /* Gardeneus */,
 				F91E18BA2F3924900029A1F0 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -53,7 +53,7 @@
 		F91E18BA2F3924900029A1F0 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				F91E18B92F3924900029A1F0 /* BackyardGarden.app */,
+				F91E18B92F3924900029A1F0 /* Gardeneus.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -61,9 +61,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		F91E18B82F3924900029A1F0 /* BackyardGarden */ = {
+		F91E18B82F3924900029A1F0 /* Gardeneus */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = F91E18C72F3924900029A1F0 /* Build configuration list for PBXNativeTarget "BackyardGarden" */;
+			buildConfigurationList = F91E18C72F3924900029A1F0 /* Build configuration list for PBXNativeTarget "Gardeneus" */;
 			buildPhases = (
 				F91E18B52F3924900029A1F0 /* Sources */,
 				F91E18B62F3924900029A1F0 /* Frameworks */,
@@ -74,13 +74,13 @@
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
-				F91E18BB2F3924900029A1F0 /* BackyardGarden */,
+				F91E18BB2F3924900029A1F0 /* Gardeneus */,
 			);
-			name = BackyardGarden;
+			name = Gardeneus;
 			packageProductDependencies = (
 			);
-			productName = BackyardGarden;
-			productReference = F91E18B92F3924900029A1F0 /* BackyardGarden.app */;
+			productName = Gardeneus;
+			productReference = F91E18B92F3924900029A1F0 /* Gardeneus.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -98,7 +98,7 @@
 					};
 				};
 			};
-			buildConfigurationList = F91E18B42F3924900029A1F0 /* Build configuration list for PBXProject "BackyardGarden" */;
+			buildConfigurationList = F91E18B42F3924900029A1F0 /* Build configuration list for PBXProject "Gardeneus" */;
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -112,7 +112,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				F91E18B82F3924900029A1F0 /* BackyardGarden */,
+				F91E18B82F3924900029A1F0 /* Gardeneus */,
 			);
 		};
 /* End PBXProject section */
@@ -150,8 +150,7 @@
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SELECTED_FILES = readonly;
-				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = BackyardGarden/Info.plist;
+				INFOPLIST_FILE = Gardeneus/Info.plist;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;
@@ -167,7 +166,7 @@
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 26.2;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = gabrielcsapo.BackyardGarden;
+				PRODUCT_BUNDLE_IDENTIFIER = gabrielcsapo.Gardeneus;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				REGISTER_APP_GROUPS = YES;
 				SDKROOT = auto;
@@ -195,8 +194,7 @@
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SELECTED_FILES = readonly;
-				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = BackyardGarden/Info.plist;
+				INFOPLIST_FILE = Gardeneus/Info.plist;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;
@@ -212,7 +210,7 @@
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 26.2;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = gabrielcsapo.BackyardGarden;
+				PRODUCT_BUNDLE_IDENTIFIER = gabrielcsapo.Gardeneus;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				REGISTER_APP_GROUPS = YES;
 				SDKROOT = auto;
@@ -347,7 +345,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		F91E18B42F3924900029A1F0 /* Build configuration list for PBXProject "BackyardGarden" */ = {
+		F91E18B42F3924900029A1F0 /* Build configuration list for PBXProject "Gardeneus" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				F91E18CA2F3924900029A1F0 /* Debug */,
@@ -356,7 +354,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		F91E18C72F3924900029A1F0 /* Build configuration list for PBXNativeTarget "BackyardGarden" */ = {
+		F91E18C72F3924900029A1F0 /* Build configuration list for PBXNativeTarget "Gardeneus" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				F91E18C82F3924900029A1F0 /* Debug */,

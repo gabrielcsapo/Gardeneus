@@ -23,7 +23,7 @@ async function main() {
 
   const port = Number(process.env.PORT) || 3000;
   serve({ fetch: app.fetch, port }, (info) => {
-    console.log(`Backyard Garden running at http://localhost:${info.port}`);
+    console.log(`Gardeneus running at http://localhost:${info.port}`);
   });
 }
 

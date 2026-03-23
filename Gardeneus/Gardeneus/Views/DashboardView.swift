@@ -61,7 +61,7 @@ struct DashboardView: View {
             .refreshable {
                 await performSync()
             }
-            .navigationTitle("Backyard Garden")
+            .navigationTitle("Gardeneus")
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
@@ -208,7 +208,7 @@ struct DashboardView: View {
             Image(systemName: "leaf.circle")
                 .font(.system(size: 48))
                 .foregroundStyle(.gardenGreen)
-            Text("Welcome to Backyard Garden")
+            Text("Welcome to Gardeneus")
                 .font(.title3.weight(.semibold))
             Text("Connect to your garden server and sync to get started.")
                 .font(.subheadline)

@@ -1,6 +1,6 @@
 //
 //  SyncBannerView.swift
-//  BackyardGarden
+//  Gardeneus
 //
 
 import SwiftUI

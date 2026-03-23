@@ -1,6 +1,6 @@
 //
-//  BackyardGardenApp.swift
-//  BackyardGarden
+//  GardeneusApp.swift
+//  Gardeneus
 //
 //  Created by Gabriel Csapo on 2/8/26.
 //
@@ -9,7 +9,7 @@ import SwiftUI
 import SwiftData
 
 @main
-struct BackyardGardenApp: App {
+struct GardeneusApp: App {
     @State private var serverDiscovery = ServerDiscovery()
 
     var sharedModelContainer: ModelContainer = {

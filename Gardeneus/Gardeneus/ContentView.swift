@@ -1,6 +1,6 @@
 //
 //  ContentView.swift
-//  BackyardGarden
+//  Gardeneus
 //
 //  Created by Gabriel Csapo on 2/8/26.
 //
