@@ -1,13 +1,18 @@
 import { Link } from "react-flight-router/client";
 import { eq, sql } from "drizzle-orm";
 import { db } from "../db/index.ts";
-import { settings, plantings, plants, yardElements } from "../db/schema.ts";
+import { settings, plantings, plants, yardElements, tasks } from "../db/schema.ts";
 import { markCalendarTaskDone } from "./calendar.actions.ts";
 import { exportAllPlantings } from "./export.actions.ts";
 import { getMoonPhase } from "../lib/moon-phases.ts";
+import { generateTasksForPlantings } from "../lib/task-generator.ts";
+import { completeTask, uncompleteTask, deleteTask, updateTask, createTask } from "./tasks.actions.ts";
 import { GanttCalendar, MoonPhaseCard, ExportButton } from "./calendar.client.tsx";
+import { TaskList, AddTaskForm } from "./tasks.client.tsx";
 
 const Component = async () => {
+  await generateTasksForPlantings();
+
   const userSettings = (await db.select().from(settings).limit(1))[0];
 
   if (!userSettings?.lastFrostDate) {
@@ -59,6 +64,23 @@ const Component = async () => {
     .innerJoin(yardElements, eq(plantings.yardElementId, yardElements.id))
     .where(sql`${plantings.status} != 'done'`);
 
+  const allTasks = await db
+    .select({
+      id: tasks.id,
+      title: tasks.title,
+      description: tasks.description,
+      dueDate: tasks.dueDate,
+      recurrence: tasks.recurrence,
+      completedAt: tasks.completedAt,
+      taskType: tasks.taskType,
+      plantingId: tasks.plantingId,
+      yardElementId: tasks.yardElementId,
+      bedLabel: yardElements.label,
+    })
+    .from(tasks)
+    .leftJoin(yardElements, eq(tasks.yardElementId, yardElements.id))
+    .orderBy(sql`${tasks.completedAt} IS NOT NULL, ${tasks.dueDate} ASC`);
+
   return (
     <main className="mx-auto max-w-6xl px-6 py-8">
       <nav className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 mb-6">
@@ -79,6 +101,22 @@ const Component = async () => {
         <div className="flex items-center gap-3">
           <MoonPhaseCard moonPhase={getMoonPhase()} />
           <ExportButton exportAction={exportAllPlantings} label="Export" />
+        </div>
+      </div>
+
+      <div className="mb-8">
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="text-base font-semibold text-gray-900 dark:text-gray-100">Tasks</h2>
+          <AddTaskForm createAction={createTask} />
+        </div>
+        <div className="bg-white dark:bg-gray-800 rounded-xl border border-earth-200 dark:border-gray-700 shadow-sm p-5">
+          <TaskList
+            tasks={allTasks}
+            completeAction={completeTask}
+            uncompleteAction={uncompleteTask}
+            deleteAction={deleteTask}
+            updateAction={updateTask}
+          />
         </div>
       </div>
 

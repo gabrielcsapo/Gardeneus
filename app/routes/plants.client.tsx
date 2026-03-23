@@ -822,3 +822,43 @@ function PlantingCalendarBar({
     </div>
   );
 }
+
+export function PlantsPageTabs({
+  plantsTab,
+  pestsTab,
+}: {
+  plantsTab: React.ReactNode;
+  pestsTab: React.ReactNode;
+}) {
+  const [active, setActive] = React.useState<"plants" | "pests">("plants");
+  return (
+    <div>
+      <div className="flex gap-1 mb-6 border-b border-earth-200 dark:border-gray-700">
+        <button
+          type="button"
+          onClick={() => setActive("plants")}
+          className={`px-4 py-2 text-sm font-medium border-b-2 -mb-px transition-colors cursor-pointer ${
+            active === "plants"
+              ? "border-garden-500 text-garden-700 dark:text-garden-400"
+              : "border-transparent text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100"
+          }`}
+        >
+          Plant Library
+        </button>
+        <button
+          type="button"
+          onClick={() => setActive("pests")}
+          className={`px-4 py-2 text-sm font-medium border-b-2 -mb-px transition-colors cursor-pointer ${
+            active === "pests"
+              ? "border-garden-500 text-garden-700 dark:text-garden-400"
+              : "border-transparent text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100"
+          }`}
+        >
+          Pests & Diseases
+        </button>
+      </div>
+      <div style={{ display: active === "plants" ? undefined : "none" }}>{plantsTab}</div>
+      <div style={{ display: active === "pests" ? undefined : "none" }}>{pestsTab}</div>
+    </div>
+  );
+}

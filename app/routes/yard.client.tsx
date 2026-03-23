@@ -49,8 +49,92 @@ import {
   updateCursorDisplay,
 } from "../components/yard/status-bar.client.tsx";
 import { SnapGuides } from "../components/yard/snap-guides.client.tsx";
-import { useTheme } from "../components/theme-provider.client";
-import { YardPreview } from "./home.client";
+function useIsDark() {
+  const [isDark, setIsDark] = React.useState(
+    () => typeof document !== "undefined" && document.documentElement.classList.contains("dark"),
+  );
+  React.useEffect(() => {
+    const obs = new MutationObserver(() =>
+      setIsDark(document.documentElement.classList.contains("dark")),
+    );
+    obs.observe(document.documentElement, { attributeFilter: ["class"] });
+    return () => obs.disconnect();
+  }, []);
+  return isDark;
+}
+
+// ── YardPreview (used in the yard list page) ────────────────────
+type PreviewElement = {
+  id: number;
+  shapeType: string;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  label: string | null;
+  rotation: number | null;
+};
+
+const PREVIEW_CELL_SIZE = 28;
+
+export function YardPreview({
+  widthFt,
+  heightFt,
+  elements,
+}: {
+  widthFt: number;
+  heightFt: number;
+  elements: PreviewElement[];
+}) {
+  const isDark = useIsDark();
+  const gridWidth = widthFt * PREVIEW_CELL_SIZE;
+  const gridHeight = heightFt * PREVIEW_CELL_SIZE;
+  const bgColor = isDark ? "#1f2937" : "#f9fafb";
+  const gridColor = isDark ? "#374151" : "#e5e7eb";
+  const labelColor = isDark ? "#d1d5db" : "#374151";
+
+  return (
+    <div className="flex justify-center items-center h-40">
+      <svg width="100%" height="100%" viewBox={`0 0 ${gridWidth} ${gridHeight}`} preserveAspectRatio="xMidYMid meet">
+        <rect width={gridWidth} height={gridHeight} fill={bgColor} />
+        {Array.from({ length: Math.floor(widthFt / 5) + 1 }, (_, i) => (
+          <line key={`v-${i}`} x1={i * 5 * PREVIEW_CELL_SIZE} y1={0} x2={i * 5 * PREVIEW_CELL_SIZE} y2={gridHeight} stroke={gridColor} strokeWidth={0.5} />
+        ))}
+        {Array.from({ length: Math.floor(heightFt / 5) + 1 }, (_, i) => (
+          <line key={`h-${i}`} x1={0} y1={i * 5 * PREVIEW_CELL_SIZE} x2={gridWidth} y2={i * 5 * PREVIEW_CELL_SIZE} stroke={gridColor} strokeWidth={0.5} />
+        ))}
+        {elements.map((el) => {
+          const config = SHAPE_CONFIG[el.shapeType as ShapeType] ?? SHAPE_CONFIG.rectangle;
+          const x = el.x * PREVIEW_CELL_SIZE;
+          const y = el.y * PREVIEW_CELL_SIZE;
+          const w = el.width * PREVIEW_CELL_SIZE;
+          const h = el.height * PREVIEW_CELL_SIZE;
+          const isCircular = ["circle", "keyhole", "spiral", "mandala"].includes(el.shapeType);
+          const rotation = el.rotation ?? 0;
+          const cx = x + w / 2;
+          const cy = y + h / 2;
+          return (
+            <g key={el.id} transform={rotation !== 0 ? `rotate(${rotation}, ${cx}, ${cy})` : undefined}>
+              {isCircular ? (
+                <ellipse cx={cx} cy={cy} rx={w / 2} ry={h / 2} fill={config.color} stroke={config.borderColor} strokeWidth={1} opacity={0.85} />
+              ) : el.shapeType === "hugelkultur" ? (
+                <path d={`M ${x} ${y + h} Q ${x + w * 0.25} ${y + h * 0.2}, ${cx} ${y} Q ${x + w * 0.75} ${y + h * 0.2}, ${x + w} ${y + h} Z`} fill={config.color} stroke={config.borderColor} strokeWidth={1} opacity={0.85} />
+              ) : (
+                <rect x={x} y={y} width={w} height={h} rx={el.shapeType === "container" ? 6 : 2} fill={config.color} stroke={config.borderColor} strokeWidth={1} opacity={0.85} />
+              )}
+              {el.label && (
+                <text x={cx} y={cy + (isCircular ? 0 : 4)} textAnchor="middle" dominantBaseline="middle" fontSize={Math.min(11, w / (el.label.length * 0.7))} fill={labelColor} fontWeight="500" pointerEvents="none">
+                  {el.label}
+                </text>
+              )}
+              <title>{el.label ?? el.shapeType}</title>
+            </g>
+          );
+        })}
+      </svg>
+    </div>
+  );
+}
 
 type YardSummary = {
   id: number;
@@ -382,17 +466,22 @@ function YardSettingsModal({
   }
 
   async function handleDelete() {
+    onClose();
     const ok = await confirm({
       title: "Delete yard?",
       message: `"${yard.name}" and all its beds and plantings will be permanently removed.`,
       destructive: true,
     });
     if (!ok) return;
-    const formData = new FormData();
-    formData.set("id", String(yard.id));
-    await deleteYard(formData);
-    addToast("Yard deleted", "info");
-    navigate("/yard");
+    try {
+      const formData = new FormData();
+      formData.set("id", String(yard.id));
+      await deleteYard(formData);
+      addToast("Yard deleted", "info");
+      window.location.href = "/";
+    } catch (err) {
+      addToast("Failed to delete yard", "error");
+    }
   }
 
   return (
@@ -530,7 +619,7 @@ export function YardEditor({
   const gridWidth = yard.widthFt * CELL_SIZE;
   const gridHeight = yard.heightFt * CELL_SIZE;
   const panZoom = usePanZoom(svgRef, containerRef, gridWidth, gridHeight);
-  const { isDark } = useTheme();
+  const isDark = useIsDark();
 
   // Grid colors — higher contrast in both modes
   const GRID_COLOR = isDark ? "#374151" : "#d1d5db";
@@ -686,6 +775,10 @@ export function YardEditor({
         x: String(Math.max(0, el.x + dx)),
         y: String(Math.max(0, el.y + dy)),
       });
+    },
+    onPanCanvas: (dx, dy) => {
+      const step = Math.min(panZoom.viewWidth, panZoom.viewHeight) * 0.15;
+      panZoom.setView(panZoom.viewX + dx * step, panZoom.viewY + dy * step);
     },
     onUndo: undo,
     onRedo: redo,
@@ -1168,7 +1261,7 @@ export function YardEditor({
             const y = el.y * CELL_SIZE;
             const w = el.width * CELL_SIZE;
             const h = el.height * CELL_SIZE;
-            const hs = CELL_SIZE; // visible handle size (half a grid cell)
+            const hs = CELL_SIZE * 0.5; // visible handle size
             const hit = CELL_SIZE; // invisible hit area (full grid cell)
             const handles = [
               { name: "nw", cx: x, cy: y },
@@ -1403,6 +1496,7 @@ export function YardEditor({
           <div className="border-t border-earth-200 dark:border-gray-700 px-4 py-3">
             <h3 className="text-xs font-medium text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-3">Bed Details</h3>
             <PropertiesPanel
+              key={`${selected.id}-${selected.x}-${selected.y}-${selected.width}-${selected.height}-${selected.rotation}`}
               element={selected}
               onUpdate={(updates) => handleUpdateElement(selected.id, updates)}
             />

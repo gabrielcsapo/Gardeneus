@@ -1,6 +1,6 @@
 import "./styles.css";
 import { Outlet } from "react-flight-router/client";
-import { DumpError, GlobalNavigationLoadingBar, ScrollToTop, Sidebar } from "./routes/root.client";
+import { DumpError, GlobalNavigationLoadingBar, ScrollToTop } from "./routes/root.client";
 import { ToastProvider } from "./components/toast.client";
 import { ConfirmDialogProvider } from "./components/confirm-dialog.client";
 import { ThemeProvider } from "./components/theme-provider.client";
@@ -72,9 +72,8 @@ export default async function Root() {
         <ThemeProvider>
           <GlobalNavigationLoadingBar />
           <ScrollToTop />
-          <Sidebar />
           <KeyboardShortcuts />
-          <div className="lg:ml-56" style={{ viewTransitionName: "main-content" }}>
+          <div style={{ viewTransitionName: "main-content" }}>
             <ToastProvider>
               <ConfirmDialogProvider>
                 <CommandPalette entries={searchEntries} />

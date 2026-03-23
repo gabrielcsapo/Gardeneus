@@ -5,7 +5,19 @@ import { SHAPE_CONFIG } from "../../lib/shapes.ts";
 import type { ShapeType } from "../../lib/shapes.ts";
 import type { Yard, YardElement } from "../../lib/yard-types.ts";
 import { CELL_SIZE } from "../../lib/yard-types.ts";
-import { useTheme } from "../theme-provider.client";
+function useIsDark() {
+  const [isDark, setIsDark] = React.useState(
+    () => typeof document !== "undefined" && document.documentElement.classList.contains("dark"),
+  );
+  React.useEffect(() => {
+    const obs = new MutationObserver(() =>
+      setIsDark(document.documentElement.classList.contains("dark")),
+    );
+    obs.observe(document.documentElement, { attributeFilter: ["class"] });
+    return () => obs.disconnect();
+  }, []);
+  return isDark;
+}
 
 export function Minimap({
   yard,
@@ -30,7 +42,7 @@ export function Minimap({
   onNavigate: (viewX: number, viewY: number) => void;
   panelOpen: boolean;
 }) {
-  const { isDark } = useTheme();
+  const isDark = useIsDark();
   const minimapWidth = 160;
   const minimapHeight = minimapWidth * (yard.heightFt / yard.widthFt);
 

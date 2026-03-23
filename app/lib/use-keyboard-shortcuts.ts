@@ -26,6 +26,7 @@ export function useKeyboardShortcuts({
   onDelete,
   onDuplicate,
   onMove,
+  onPanCanvas,
   onUndo,
   onRedo,
   onCloseAll,
@@ -38,6 +39,7 @@ export function useKeyboardShortcuts({
   onDelete: (id: number) => void;
   onDuplicate: (id: number) => void;
   onMove: (id: number, dx: number, dy: number) => void;
+  onPanCanvas: (dx: number, dy: number) => void;
   onUndo: () => void;
   onRedo: () => void;
   onCloseAll: () => void;
@@ -79,11 +81,15 @@ export function useKeyboardShortcuts({
         e.preventDefault();
         if (selectedId) onDuplicate(selectedId);
       }
-      if (selectedId && ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(e.key)) {
+      if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(e.key)) {
         e.preventDefault();
         const dx = e.key === "ArrowRight" ? 1 : e.key === "ArrowLeft" ? -1 : 0;
         const dy = e.key === "ArrowDown" ? 1 : e.key === "ArrowUp" ? -1 : 0;
-        onMove(selectedId, dx, dy);
+        if (selectedId) {
+          onMove(selectedId, dx, dy);
+        } else {
+          onPanCanvas(dx, dy);
+        }
       }
       if (e.key === "Escape") {
         onCloseAll();
@@ -91,5 +97,5 @@ export function useKeyboardShortcuts({
     }
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [selectedId, elements, activeTool]);
+  }, [selectedId, elements, activeTool, onPanCanvas]);
 }

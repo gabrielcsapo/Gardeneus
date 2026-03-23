@@ -1,4 +1,4 @@
-[
+export default [
   {
     "name": "Tomato Hornworm",
     "type": "pest",
@@ -439,4 +439,4 @@
     "beneficialPredators": [],
     "activeMonths": [6, 7, 8, 9, 10]
   }
-]
+] as const;

@@ -2,7 +2,6 @@ import { Link } from "react-flight-router/client";
 import { db } from "../db/index.ts";
 import { settings } from "../db/schema.ts";
 import { USDA_ZONES } from "../lib/zones.ts";
-import { saveSettings } from "./settings.actions.ts";
 import { SettingsForm } from "./settings.client.tsx";
 import zipZoneData from "../db/zip-zones.json";
 
@@ -35,7 +34,6 @@ const Component = async () => {
             zipZoneData as Record<string, { zone: string; lastFrost: string; firstFrost: string }>
           }
           zones={USDA_ZONES}
-          saveAction={saveSettings}
         />
       </div>
     </main>

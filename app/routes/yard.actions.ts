@@ -1,8 +1,8 @@
 "use server";
 
-import { eq } from "drizzle-orm";
+import { eq, inArray } from "drizzle-orm";
 import { db } from "../db/index.ts";
-import { yards, yardElements } from "../db/schema.ts";
+import { yards, yardElements, plantings, logEntries, tasks, soilProfiles } from "../db/schema.ts";
 
 export async function createYard(formData: FormData) {
   const name = formData.get("name") as string;
@@ -31,6 +31,33 @@ export async function updateYard(formData: FormData) {
 
 export async function deleteYard(formData: FormData) {
   const id = Number(formData.get("id"));
+
+  // Collect element IDs for this yard
+  const elements = await db.select({ id: yardElements.id }).from(yardElements).where(eq(yardElements.yardId, id));
+  const elementIds = elements.map((e) => e.id);
+
+  if (elementIds.length > 0) {
+    // Collect planting IDs so we can clean up tasks/logs that reference them
+    const plantingRows = await db.select({ id: plantings.id }).from(plantings).where(inArray(plantings.yardElementId, elementIds));
+    const plantingIds = plantingRows.map((p) => p.id);
+
+    // Delete log entries referencing these elements or plantings
+    await db.delete(logEntries).where(inArray(logEntries.yardElementId, elementIds));
+    if (plantingIds.length > 0) {
+      await db.delete(logEntries).where(inArray(logEntries.plantingId, plantingIds));
+    }
+
+    // Delete tasks referencing these elements or plantings
+    await db.delete(tasks).where(inArray(tasks.yardElementId, elementIds));
+    if (plantingIds.length > 0) {
+      await db.delete(tasks).where(inArray(tasks.plantingId, plantingIds));
+    }
+
+    // Delete soil profiles referencing these elements
+    await db.delete(soilProfiles).where(inArray(soilProfiles.yardElementId, elementIds));
+  }
+
+  // Delete the yard — FK cascade handles yardElements → plantings
   await db.delete(yards).where(eq(yards.id, id));
 }
 

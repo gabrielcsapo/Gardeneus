@@ -1,4 +1,4 @@
-[
+export default [
   {
     "name": "Tomato",
     "variety": null,
@@ -5353,4 +5353,4 @@
     "harvestWindowDays": 0,
     "storageLifeDays": 0
   }
-]
+] as const;

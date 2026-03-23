@@ -5,7 +5,19 @@ import { SHAPE_CONFIG } from "../../lib/shapes.ts";
 import type { ShapeType } from "../../lib/shapes.ts";
 import type { YardElement, PlantInfo, Planting } from "../../lib/yard-types.ts";
 import { CELL_SIZE } from "../../lib/yard-types.ts";
-import { useTheme } from "../theme-provider.client";
+function useIsDark() {
+  const [isDark, setIsDark] = React.useState(
+    () => typeof document !== "undefined" && document.documentElement.classList.contains("dark"),
+  );
+  React.useEffect(() => {
+    const obs = new MutationObserver(() =>
+      setIsDark(document.documentElement.classList.contains("dark")),
+    );
+    obs.observe(document.documentElement, { attributeFilter: ["class"] });
+    return () => obs.disconnect();
+  }, []);
+  return isDark;
+}
 
 // Distinct, bright colors that stand out against any bed fill color
 export const PLANT_PALETTE = [
@@ -202,7 +214,7 @@ export const BedPlantIcons = React.memo(function BedPlantIcons({
   if (!config?.plantable) return null;
   if (plantings.length === 0) return null;
 
-  const { isDark } = useTheme();
+  const isDark = useIsDark();
 
   const x = element.x * CELL_SIZE;
   const y = element.y * CELL_SIZE;

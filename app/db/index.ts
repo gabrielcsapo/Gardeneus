@@ -3,8 +3,8 @@ import { drizzle } from "drizzle-orm/better-sqlite3";
 import { migrate } from "drizzle-orm/better-sqlite3/migrator";
 import { eq } from "drizzle-orm";
 import * as schema from "./schema.ts";
-import plantsJsonRaw from "./plants.json";
-import pestsJsonRaw from "./pests.json";
+import plantsJsonRaw from "./plants.ts";
+import pestsJsonRaw from "./pests.ts";
 
 const sqlite = new Database("./data/garden.db");
 sqlite.pragma("journal_mode = WAL");
@@ -52,7 +52,7 @@ type PlantJson = {
   storageLifeDays: number | null;
 };
 
-const plantsJson: PlantJson[] = plantsJsonRaw as PlantJson[];
+const plantsJson: PlantJson[] = plantsJsonRaw as unknown as PlantJson[];
 
 for (const p of plantsJson) {
   const existing = db
@@ -120,7 +120,7 @@ type PestJson = {
   activeMonths: number[] | null;
 };
 
-const pestsJson: PestJson[] = pestsJsonRaw as PestJson[];
+const pestsJson: PestJson[] = pestsJsonRaw as unknown as PestJson[];
 
 for (const p of pestsJson) {
   const existing = db

@@ -5,7 +5,19 @@ import { SHAPE_CONFIG } from "../../lib/shapes.ts";
 import type { ShapeType } from "../../lib/shapes.ts";
 import type { YardElement } from "../../lib/yard-types.ts";
 import { CELL_SIZE } from "../../lib/yard-types.ts";
-import { useTheme } from "../theme-provider.client";
+function useIsDark() {
+  const [isDark, setIsDark] = React.useState(
+    () => typeof document !== "undefined" && document.documentElement.classList.contains("dark"),
+  );
+  React.useEffect(() => {
+    const obs = new MutationObserver(() =>
+      setIsDark(document.documentElement.classList.contains("dark")),
+    );
+    obs.observe(document.documentElement, { attributeFilter: ["class"] });
+    return () => obs.disconnect();
+  }, []);
+  return isDark;
+}
 
 function ShapeDetail({ element, x, y, w, h }: { element: YardElement; x: number; y: number; w: number; h: number }) {
   const config = SHAPE_CONFIG[element.shapeType as ShapeType] ?? SHAPE_CONFIG.rectangle;
@@ -222,7 +234,7 @@ export function ShapeElement({
   const cx = x + w / 2;
   const cy = y + h / 2;
 
-  const { isDark } = useTheme();
+  const isDark = useIsDark();
   const labelColor = isDark ? "#d1d5db" : "#374151";
   const notchFill = isDark ? "#1f2937" : "#f9fafb";
 

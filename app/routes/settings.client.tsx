@@ -1,8 +1,8 @@
 "use client";
 
-import React from "react";
-import { useFormStatus } from "react-dom";
+import React, { useState, useRef, useEffect } from "react";
 import { useToast } from "../components/toast.client";
+import { saveSettings } from "./settings.actions";
 
 type ZipZoneEntry = { zone: string; lastFrost: string; firstFrost: string };
 type ZipZoneData = Record<string, ZipZoneEntry>;
@@ -20,24 +20,50 @@ export function SettingsForm({
   currentSettings,
   zipZoneData,
   zones,
-  saveAction,
 }: {
   currentSettings: CurrentSettings;
   zipZoneData: ZipZoneData;
-  zones: string[];
-  saveAction: (formData: FormData) => Promise<{ success: boolean; error?: string }>;
+  zones: readonly string[];
 }) {
-  const [zip, setZip] = React.useState(currentSettings?.zipCode ?? "");
-  const [zone, setZone] = React.useState(currentSettings?.zone ?? "");
-  const [lastFrost, setLastFrost] = React.useState(currentSettings?.lastFrostDate ?? "");
-  const [firstFrost, setFirstFrost] = React.useState(currentSettings?.firstFrostDate ?? "");
-  const [latitude, setLatitude] = React.useState(currentSettings?.latitude?.toString() ?? "");
-  const [longitude, setLongitude] = React.useState(currentSettings?.longitude?.toString() ?? "");
-  const [autoDetected, setAutoDetected] = React.useState(false);
-  const [error, setError] = React.useState<string | null>(null);
+  const [zip, setZip] = useState(currentSettings?.zipCode ?? "");
+  const [zone, setZone] = useState(currentSettings?.zone ?? "");
+  const [lastFrost, setLastFrost] = useState(
+    currentSettings?.lastFrostDate ?? "",
+  );
+  const [firstFrost, setFirstFrost] = useState(
+    currentSettings?.firstFrostDate ?? "",
+  );
+  const [latitude, setLatitude] = useState(
+    currentSettings?.latitude?.toString() ?? "",
+  );
+  const [longitude, setLongitude] = useState(
+    currentSettings?.longitude?.toString() ?? "",
+  );
+  const [autoDetected, setAutoDetected] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const { addToast } = useToast();
+  const userChangedZip = useRef(false);
+  const justSaved = useRef(false);
 
-  React.useEffect(() => {
+  useEffect(() => {
+    if (!currentSettings) return;
+    if (justSaved.current) {
+      justSaved.current = false;
+      return;
+    }
+    userChangedZip.current = false;
+    setZip(currentSettings.zipCode ?? "");
+    setZone(currentSettings.zone ?? "");
+    setLastFrost(currentSettings.lastFrostDate ?? "");
+    setFirstFrost(currentSettings.firstFrostDate ?? "");
+    setLatitude(currentSettings.latitude?.toString() ?? "");
+    setLongitude(currentSettings.longitude?.toString() ?? "");
+    setAutoDetected(false);
+  }, [currentSettings]);
+
+  useEffect(() => {
+    if (!userChangedZip.current) return;
     if (zip.length === 5) {
       const prefix = zip.slice(0, 3);
       const lookup = zipZoneData[prefix];
@@ -52,14 +78,18 @@ export function SettingsForm({
     } else {
       setAutoDetected(false);
     }
-  }, [zip, zipZoneData]);
+  }, [zip]);
 
   async function handleSubmit(formData: FormData) {
     setError(null);
-    const result = await saveAction(formData);
+    setSaving(true);
+    justSaved.current = true;
+    const result = await saveSettings(formData);
+    setSaving(false);
     if (result.success) {
       addToast("Settings saved successfully!", "success");
     } else {
+      justSaved.current = false;
       setError(result.error ?? "Failed to save settings.");
       addToast(result.error ?? "Failed to save settings.", "error");
     }
@@ -81,7 +111,10 @@ export function SettingsForm({
       )}
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5" htmlFor="zipInput">
+        <label
+          className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5"
+          htmlFor="zipInput"
+        >
           Zip Code
         </label>
         <input
@@ -93,7 +126,10 @@ export function SettingsForm({
           maxLength={5}
           placeholder="Enter 5-digit zip code"
           value={zip}
-          onChange={(e) => setZip(e.target.value.replace(/\D/g, "").slice(0, 5))}
+          onChange={(e) => {
+            userChangedZip.current = true;
+            setZip(e.target.value.replace(/\D/g, "").slice(0, 5));
+          }}
         />
         <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
           Enter your zip code to auto-detect zone and frost dates.
@@ -101,7 +137,10 @@ export function SettingsForm({
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5" htmlFor="zoneSelect">
+        <label
+          className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5"
+          htmlFor="zoneSelect"
+        >
           USDA Hardiness Zone
           {autoDetected && (
             <span className="ml-2 inline-flex items-center rounded-md bg-garden-50 dark:bg-garden-900/30 px-1.5 py-0.5 text-[10px] font-medium text-garden-700 dark:text-garden-400 ring-1 ring-inset ring-garden-600/20">
@@ -228,42 +267,39 @@ export function SettingsForm({
       </div>
 
       <div className="pt-2">
-        <SubmitButton />
+        <button
+          className="inline-flex items-center gap-2 rounded-lg bg-garden-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-garden-700 focus:outline-none focus:ring-2 focus:ring-garden-500/20 disabled:opacity-50 transition-colors cursor-pointer"
+          type="submit"
+          disabled={saving}
+        >
+          {saving ? (
+            <>
+              <svg
+                className="animate-spin h-4 w-4"
+                viewBox="0 0 24 24"
+                fill="none"
+              >
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                />
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+                />
+              </svg>
+              Saving...
+            </>
+          ) : (
+            "Save Settings"
+          )}
+        </button>
       </div>
     </form>
-  );
-}
-
-function SubmitButton() {
-  const status = useFormStatus();
-  return (
-    <button
-      className="inline-flex items-center gap-2 rounded-lg bg-garden-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-garden-700 focus:outline-none focus:ring-2 focus:ring-garden-500/20 disabled:opacity-50 transition-colors cursor-pointer"
-      type="submit"
-      disabled={status.pending}
-    >
-      {status.pending ? (
-        <>
-          <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
-            <circle
-              className="opacity-25"
-              cx="12"
-              cy="12"
-              r="10"
-              stroke="currentColor"
-              strokeWidth="4"
-            />
-            <path
-              className="opacity-75"
-              fill="currentColor"
-              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
-            />
-          </svg>
-          Saving...
-        </>
-      ) : (
-        "Save Settings"
-      )}
-    </button>
   );
 }

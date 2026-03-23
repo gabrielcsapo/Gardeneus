@@ -10,7 +10,7 @@ import type { ToolType } from "../../lib/yard-types.ts";
 const SHAPE_ICONS: Record<ShapeType, React.ReactNode> = {
   rectangle: (
     // Raised bed with plank sides
-    <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+    <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
       <rect x="3" y="8" width="18" height="10" rx="1" />
       <line x1="3" y1="12" x2="21" y2="12" />
       <line x1="3" y1="15" x2="21" y2="15" />
@@ -19,27 +19,27 @@ const SHAPE_ICONS: Record<ShapeType, React.ReactNode> = {
   ),
   circle: (
     // Circle bed
-    <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+    <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
       <circle cx="12" cy="12" r="9" />
       <circle cx="12" cy="12" r="3" strokeDasharray="2 2" />
     </svg>
   ),
   keyhole: (
     // Circle with notch cut out at bottom
-    <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+    <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
       <path d="M12 3a9 9 0 0 1 6.36 15.36L14 14v7h-4v-7l-4.36 4.36A9 9 0 0 1 12 3z" />
       <circle cx="12" cy="10" r="2" />
     </svg>
   ),
   spiral: (
     // Spiral shape
-    <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
+    <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
       <path d="M12 12m-2 0a2 2 0 1 0 4 0M12 14a4 4 0 0 0 4-4 4 4 0 0 0-4-4 4 4 0 0 0-4 4M8 12a6 6 0 0 0 6 6 6 6 0 0 0 6-6 6 6 0 0 0-6-6M6 12a8 8 0 0 0 8 8" />
     </svg>
   ),
   hugelkultur: (
     // Mound shape
-    <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+    <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
       <path d="M2 18c0 0 4-12 10-12s10 12 10 12" />
       <path d="M8 16c1-3 2.5-5 4-5s3 2 4 5" strokeDasharray="2 2" />
       <line x1="12" y1="10" x2="12" y2="6" />
@@ -48,7 +48,7 @@ const SHAPE_ICONS: Record<ShapeType, React.ReactNode> = {
   ),
   mandala: (
     // Circular with petal-like inner pattern
-    <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+    <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
       <circle cx="12" cy="12" r="9" />
       <circle cx="12" cy="12" r="3" />
       <line x1="12" y1="3" x2="12" y2="9" />
@@ -63,7 +63,7 @@ const SHAPE_ICONS: Record<ShapeType, React.ReactNode> = {
   ),
   container: (
     // Pot / container
-    <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+    <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
       <path d="M5 7h14" />
       <path d="M6 7l1.5 13h9L18 7" />
       <path d="M4 4h16v3H4z" />
@@ -71,7 +71,7 @@ const SHAPE_ICONS: Record<ShapeType, React.ReactNode> = {
   ),
   path: (
     // Stepping stones
-    <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+    <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
       <rect x="4" y="2" width="6" height="4" rx="1" />
       <rect x="10" y="9" width="6" height="4" rx="1" />
       <rect x="6" y="16" width="6" height="4" rx="1" />
@@ -79,7 +79,7 @@ const SHAPE_ICONS: Record<ShapeType, React.ReactNode> = {
   ),
   structure: (
     // House/shed outline
-    <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+    <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
       <path d="M3 21V10l9-7 9 7v11" />
       <rect x="9" y="14" width="6" height="7" />
       <line x1="3" y1="21" x2="21" y2="21" />
@@ -87,7 +87,7 @@ const SHAPE_ICONS: Record<ShapeType, React.ReactNode> = {
   ),
   water: (
     // Water droplet
-    <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+    <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
       <path d="M12 2c0 0-7 8.5-7 13a7 7 0 0 0 14 0c0-4.5-7-13-7-13z" />
       <path d="M9.5 16a3 3 0 0 0 3 2.5" strokeDasharray="2 2" />
     </svg>
@@ -115,7 +115,7 @@ function ToolButton({
     <button
       type="button"
       className={`group relative rounded-md flex items-center transition cursor-pointer ${
-        expanded ? "h-7 px-1.5 gap-1.5" : "w-8 h-8 justify-center"
+        expanded ? "h-9 px-2 gap-2" : "w-10 h-10 justify-center"
       } ${
         active
           ? "bg-garden-50 ring-1 ring-garden-500 text-garden-700 dark:bg-garden-900/40 dark:ring-garden-400 dark:text-garden-400"
@@ -126,7 +126,7 @@ function ToolButton({
     >
       {children}
       {expanded && label && (
-        <span className="text-[10px] font-medium whitespace-nowrap pr-1">{label}</span>
+        <span className="text-xs font-medium whitespace-nowrap pr-1">{label}</span>
       )}
       {!expanded && (
         <span className="absolute left-full ml-2 px-2 py-1 text-[10px] font-medium text-white bg-gray-800 rounded whitespace-nowrap opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity z-50">
@@ -151,15 +151,15 @@ export function Toolbar({
   const [expanded, setExpanded] = React.useState(false);
 
   return (
-    <div className={`absolute left-2 top-1/2 -translate-y-1/2 z-20 flex flex-col gap-0.5 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-lg border border-earth-200 dark:border-gray-700 shadow-md p-1 transition-all ${expanded ? "min-w-[140px]" : ""}`}>
+    <div className={`absolute left-2 top-1/2 -translate-y-1/2 z-20 flex flex-col gap-1 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-lg border border-earth-200 dark:border-gray-700 shadow-md p-1.5 transition-all ${expanded ? "min-w-[160px]" : ""}`}>
       {/* Expand / collapse toggle */}
       <button
         type="button"
-        className="w-full h-5 flex items-center justify-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition cursor-pointer rounded hover:bg-gray-100 dark:hover:bg-gray-700"
+        className="w-full h-6 flex items-center justify-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition cursor-pointer rounded hover:bg-gray-100 dark:hover:bg-gray-700"
         onClick={() => setExpanded((v) => !v)}
         title={expanded ? "Collapse toolbar" : "Expand toolbar"}
       >
-        <svg className={`w-3 h-3 transition-transform ${expanded ? "rotate-180" : ""}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+        <svg className={`w-3.5 h-3.5 transition-transform ${expanded ? "rotate-180" : ""}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
           <polyline points={expanded ? "15 18 9 12 15 6" : "9 18 15 12 9 6"} />
         </svg>
       </button>
@@ -208,7 +208,7 @@ export function Toolbar({
             title={`${config.label} (${shortcut})`}
             label={config.label}
           >
-            <span className="relative shrink-0 w-4 h-4 flex items-center justify-center" style={{ color: config.borderColor }}>
+            <span className="relative shrink-0 w-5 h-5 flex items-center justify-center" style={{ color: config.borderColor }}>
               {SHAPE_ICONS[type]}
             </span>
           </ToolButton>
