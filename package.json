@@ -21,7 +21,7 @@
     "hono": "^4.12.9",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
-    "react-flight-router": "^0.4.0",
+    "react-flight-router": "^0.4.1",
     "react-server-dom-webpack": "^19.2.4"
   },
   "devDependencies": {
