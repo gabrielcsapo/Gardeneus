@@ -2,23 +2,37 @@ import SwiftUI
 import SwiftData
 
 struct CalendarView: View {
+    let yard: Yard
+
     @Query private var settings: [Settings]
     @Query private var plantings: [Planting]
     @Query private var plants: [Plant]
     @Query private var tasks: [GardenTask]
+    @Query private var allElements: [YardElement]
 
     @State private var selectedMonth = Calendar.current.component(.month, from: Date())
     @State private var selectedYear = Calendar.current.component(.year, from: Date())
 
     private var userSettings: Settings? { settings.first }
 
+    private var yardElementIds: Set<Int> {
+        guard let yardId = yard.serverId else { return [] }
+        return Set(allElements.filter { $0.yardServerId == yardId }.compactMap { $0.serverId })
+    }
+
     private var activePlantings: [Planting] {
-        plantings.filter { $0.status != "done" && $0.status != "removed" }
+        plantings.filter { p in
+            p.status != "done" && p.status != "removed" &&
+            p.yardElementServerId.map { yardElementIds.contains($0) } == true
+        }
     }
 
     private var monthTasks: [GardenTask] {
         let prefix = String(format: "%04d-%02d", selectedYear, selectedMonth)
-        return tasks.filter { ($0.dueDate ?? "").hasPrefix(prefix) && $0.completedAt == nil }
+        return tasks.filter { t in
+            (t.dueDate ?? "").hasPrefix(prefix) && t.completedAt == nil &&
+            t.yardElementServerId.map { yardElementIds.contains($0) } == true
+        }
     }
 
     private var monthName: String {
@@ -35,9 +49,8 @@ struct CalendarView: View {
     }
 
     var body: some View {
-        NavigationStack {
-            ScrollView {
-                VStack(spacing: 16) {
+        ScrollView {
+            VStack(spacing: 16) {
                     // Month navigator
                     HStack {
                         Button {
@@ -86,10 +99,8 @@ struct CalendarView: View {
                         }
                         .padding(.vertical, 40)
                     }
-                }
-                .padding()
             }
-            .navigationTitle("Calendar")
+            .padding()
         }
     }
 

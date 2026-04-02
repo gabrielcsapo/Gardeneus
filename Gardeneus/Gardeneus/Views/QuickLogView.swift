@@ -3,11 +3,12 @@ import SwiftData
 import PhotosUI
 
 struct QuickLogView: View {
+    let yard: Yard
+
     @Environment(\.modelContext) private var modelContext
     @Environment(ServerDiscovery.self) private var serverDiscovery
 
     @Query(sort: \LogEntry.date, order: .reverse) private var logEntries: [LogEntry]
-    @Query private var yards: [Yard]
     @Query private var elements: [YardElement]
     @Query private var plantings: [Planting]
     @Query private var plants: [Plant]
@@ -27,13 +28,24 @@ struct QuickLogView: View {
 
     private let logTypes = ["planting", "harvest", "observation", "maintenance", "watering", "pest", "weather"]
 
+    private var yardElementIds: Set<Int> {
+        guard let yardId = yard.serverId else { return [] }
+        return Set(elements.filter { $0.yardServerId == yardId }.compactMap { $0.serverId })
+    }
+
+    private var yardElements: [YardElement] {
+        guard let yardId = yard.serverId else { return [] }
+        return elements.filter { $0.yardServerId == yardId }
+    }
+
     private var filteredEntries: [LogEntry] {
         logEntries.filter { entry in
+            let matchesYard = entry.yardElementServerId.map { yardElementIds.contains($0) } == true
             let matchesType = filterType == nil || entry.type == filterType
             let matchesSearch = searchText.isEmpty ||
                 (entry.content?.localizedCaseInsensitiveContains(searchText) ?? false) ||
                 entry.type.localizedCaseInsensitiveContains(searchText)
-            return matchesType && matchesSearch
+            return matchesYard && matchesType && matchesSearch
         }
     }
 
@@ -43,66 +55,63 @@ struct QuickLogView: View {
     }
 
     var body: some View {
-        NavigationStack {
-            ScrollView {
-                VStack(spacing: 16) {
-                    quickLogButtons
+        ScrollView {
+            VStack(spacing: 16) {
+                quickLogButtons
 
-                    // Filter pills
-                    filterPills
+                // Filter pills
+                filterPills
 
-                    Divider()
-                        .padding(.horizontal)
+                Divider()
+                    .padding(.horizontal)
 
-                    if filteredEntries.isEmpty {
-                        emptyState
-                    } else {
-                        logTimeline
-                    }
-                }
-                .padding()
-            }
-            .searchable(text: $searchText, prompt: "Search logs...")
-            .navigationTitle("Garden Log")
-            .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button {
-                        showingCamera = true
-                    } label: {
-                        Image(systemName: "camera")
-                    }
+                if filteredEntries.isEmpty {
+                    emptyState
+                } else {
+                    logTimeline
                 }
             }
-            .sheet(isPresented: $showingAddLog) {
-                AddLogSheet(
-                    yards: Array(yards),
-                    elements: Array(elements),
-                    plantings: Array(plantings),
-                    plants: Array(plants),
-                    initialType: preSelectedType,
-                    initialPhoto: preSelectedPhoto
-                )
-            }
-            .sheet(isPresented: $showingCamera, onDismiss: {
-                if let image = capturedImage {
-                    preSelectedType = "observation"
-                    preSelectedPhoto = image
-                    capturedImage = nil
-                    showingAddLog = true
+            .padding()
+        }
+        .searchable(text: $searchText, prompt: "Search logs...")
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Button {
+                    showingCamera = true
+                } label: {
+                    Image(systemName: "camera")
                 }
-            }) {
-                CameraCapture(capturedImage: $capturedImage)
             }
-            .sheet(isPresented: Binding(
-                get: { selectedLogEntry != nil },
-                set: { if !$0 { selectedLogEntry = nil } }
-            )) {
-                if let entry = selectedLogEntry {
-                    EditableLogDetailSheet(entry: entry, elements: Array(elements), onDelete: {
-                        modelContext.delete(entry)
-                        selectedLogEntry = nil
-                    })
-                }
+        }
+        .sheet(isPresented: $showingAddLog) {
+            AddLogSheet(
+                yards: [yard],
+                elements: yardElements,
+                plantings: Array(plantings),
+                plants: Array(plants),
+                initialType: preSelectedType,
+                initialPhoto: preSelectedPhoto
+            )
+        }
+        .sheet(isPresented: $showingCamera, onDismiss: {
+            if let image = capturedImage {
+                preSelectedType = "observation"
+                preSelectedPhoto = image
+                capturedImage = nil
+                showingAddLog = true
+            }
+        }) {
+            CameraCapture(capturedImage: $capturedImage)
+        }
+        .sheet(isPresented: Binding(
+            get: { selectedLogEntry != nil },
+            set: { if !$0 { selectedLogEntry = nil } }
+        )) {
+            if let entry = selectedLogEntry {
+                EditableLogDetailSheet(entry: entry, elements: Array(elements), onDelete: {
+                    modelContext.delete(entry)
+                    selectedLogEntry = nil
+                })
             }
         }
     }

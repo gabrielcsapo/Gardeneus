@@ -2,6 +2,8 @@ import SwiftUI
 import SwiftData
 
 struct TaskListView: View {
+    let yard: Yard
+
     @Environment(\.modelContext) private var modelContext
     @Query(sort: \GardenTask.dueDate) private var tasks: [GardenTask]
     @Query private var elements: [YardElement]
@@ -16,11 +18,19 @@ struct TaskListView: View {
         case all = "All"
     }
 
+    private var yardElementIds: Set<Int> {
+        guard let yardId = yard.serverId else { return [] }
+        return Set(elements.filter { $0.yardServerId == yardId }.compactMap { $0.serverId })
+    }
+
     private var filteredTasks: [GardenTask] {
+        let yardTasks = tasks.filter { t in
+            t.yardElementServerId.map { yardElementIds.contains($0) } == true
+        }
         switch filter {
-        case .pending: return tasks.filter { $0.completedAt == nil }
-        case .completed: return tasks.filter { $0.completedAt != nil }
-        case .all: return Array(tasks)
+        case .pending: return yardTasks.filter { $0.completedAt == nil }
+        case .completed: return yardTasks.filter { $0.completedAt != nil }
+        case .all: return yardTasks
         }
     }
 
@@ -47,8 +57,7 @@ struct TaskListView: View {
     }
 
     var body: some View {
-        NavigationStack {
-            List {
+        List {
                 // Filter picker
                 Picker("Filter", selection: $filter) {
                     ForEach(TaskFilter.allCases, id: \.self) { f in
@@ -91,7 +100,6 @@ struct TaskListView: View {
                 }
             }
             .listStyle(.plain)
-            .navigationTitle("Tasks")
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
@@ -114,7 +122,6 @@ struct TaskListView: View {
                         selectedTask = nil
                     })
                 }
-            }
         }
     }
 

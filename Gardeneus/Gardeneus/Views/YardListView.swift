@@ -15,7 +15,7 @@ struct YardListView: View {
                     LazyVStack(spacing: 16) {
                         ForEach(yards, id: \.id) { yard in
                             NavigationLink {
-                                YardEditorView(yard: yard)
+                                GardenDetailView(yard: yard)
                             } label: {
                                 YardCard(yard: yard, elements: elementsForYard(yard))
                             }
@@ -32,7 +32,7 @@ struct YardListView: View {
                     .padding()
                 }
             }
-            .navigationTitle("Yards")
+            .navigationTitle("Gardens")
         }
     }
 
@@ -46,14 +46,15 @@ struct YardListView: View {
             Image(systemName: "square.grid.2x2")
                 .font(.system(size: 48))
                 .foregroundStyle(.gardenGreen)
-            Text("No Yards Yet")
+            Text("No Gardens Yet")
                 .font(.title3.weight(.semibold))
-            Text("Sync with your garden server to see your yards here.")
+            Text("Sync with your garden server to see your gardens here.")
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
         }
-        .padding(.vertical, 60)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .containerRelativeFrame([.vertical])
     }
 }
 

@@ -18,27 +18,17 @@ struct ContentView: View {
 
     var body: some View {
         TabView(selection: $selectedTab) {
-            Tab("Home", systemImage: "leaf.fill", value: 0) {
-                DashboardView(syncEngine: syncEngine)
-            }
-
-            Tab("Yards", systemImage: "square.grid.2x2.fill", value: 1) {
+            Tab("Garden", systemImage: "leaf.fill", value: 0) {
                 YardListView()
             }
 
-            Tab("Tasks", systemImage: "checklist", value: 2) {
-                TaskListView()
-            }
-
-            Tab("Log", systemImage: "note.text", value: 3) {
-                QuickLogView()
-            }
-
-            Tab("More", systemImage: "ellipsis.circle", value: 4) {
+            Tab("More", systemImage: "ellipsis.circle", value: 1) {
                 MoreView(syncEngine: syncEngine)
             }
         }
         .tint(Color("GardenGreen"))
+        .background(Color(.systemBackground))
+        .ignoresSafeArea()
         .task {
             await initSyncEngine()
         }

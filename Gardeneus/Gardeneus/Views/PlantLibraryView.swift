@@ -29,8 +29,8 @@ struct PlantLibraryView: View {
 
     var body: some View {
         NavigationStack {
-            List {
-                // Category pills
+            VStack(spacing: 0) {
+                // Category pills pinned below search bar
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: 8) {
                         CategoryPill(label: "All", isSelected: selectedCategory == nil) {
@@ -45,22 +45,25 @@ struct PlantLibraryView: View {
                             }
                         }
                     }
-                    .padding(.horizontal, 4)
+                    .padding(.horizontal, 16)
                 }
-                .listRowInsets(EdgeInsets(top: 8, leading: 0, bottom: 8, trailing: 0))
-                .listRowSeparator(.hidden)
+                .padding(.vertical, 8)
+                .background(Color(.systemBackground))
 
-                // Plant rows
-                ForEach(filteredPlants, id: \.id) { plant in
-                    Button {
-                        selectedPlant = plant
-                    } label: {
-                        PlantRow(plant: plant)
+                Divider()
+
+                List {
+                    ForEach(filteredPlants, id: \.id) { plant in
+                        Button {
+                            selectedPlant = plant
+                        } label: {
+                            PlantRow(plant: plant)
+                        }
+                        .listRowInsets(EdgeInsets(top: 4, leading: 16, bottom: 4, trailing: 16))
                     }
-                    .listRowInsets(EdgeInsets(top: 4, leading: 16, bottom: 4, trailing: 16))
                 }
+                .listStyle(.plain)
             }
-            .listStyle(.plain)
             .searchable(text: $searchText, prompt: "Search plants...")
             .navigationTitle("Plants")
             .sheet(isPresented: Binding(

@@ -44,6 +44,27 @@ private enum HTTPMethod: String {
     case delete = "DELETE"
 }
 
+// MARK: - Local Trust Delegate
+
+/// Allows TLS connections to `.local` hosts whose certificates are signed by a
+/// local CA (e.g. deploy.sh Local CA). Scoped only to `.local` mDNS domains so
+/// it does not weaken security for any public host.
+private final class LocalTrustDelegate: NSObject, URLSessionDelegate, @unchecked Sendable {
+    func urlSession(
+        _ session: URLSession,
+        didReceive challenge: URLAuthenticationChallenge,
+        completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void
+    ) {
+        guard challenge.protectionSpace.authenticationMethod == NSURLAuthenticationMethodServerTrust,
+              challenge.protectionSpace.host.hasSuffix(".local"),
+              let trust = challenge.protectionSpace.serverTrust else {
+            completionHandler(.performDefaultHandling, nil)
+            return
+        }
+        completionHandler(.useCredential, URLCredential(trust: trust))
+    }
+}
+
 // MARK: - API Client
 
 actor APIClient {
@@ -52,12 +73,18 @@ actor APIClient {
     private let decoder: JSONDecoder
     private let encoder: JSONEncoder
 
+    // Held as a stored property so ARC keeps the delegate alive for the session's lifetime.
+    private let trustDelegate: LocalTrustDelegate?
+
     init(baseURL: URL) {
         self.baseURL = baseURL
         let config = URLSessionConfiguration.default
         config.timeoutIntervalForRequest = 15
         config.timeoutIntervalForResource = 30
-        self.session = URLSession(configuration: config)
+        let isLocal = baseURL.host?.hasSuffix(".local") == true
+        let delegate: LocalTrustDelegate? = isLocal ? LocalTrustDelegate() : nil
+        self.trustDelegate = delegate
+        self.session = URLSession(configuration: config, delegate: delegate, delegateQueue: nil)
 
         self.decoder = JSONDecoder()
         self.encoder = JSONEncoder()
