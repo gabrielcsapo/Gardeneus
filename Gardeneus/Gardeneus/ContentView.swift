@@ -17,31 +17,34 @@ struct ContentView: View {
     @State private var syncEngine: SyncEngine?
 
     var body: some View {
-        TabView(selection: $selectedTab) {
-            Tab("Garden", systemImage: "leaf.fill", value: 0) {
-                YardListView()
-            }
+        if serverDiscovery.isConfigured {
+            TabView(selection: $selectedTab) {
+                Tab("Garden", systemImage: "leaf.fill", value: 0) {
+                    YardListView()
+                }
 
-            Tab("More", systemImage: "ellipsis.circle", value: 1) {
-                MoreView(syncEngine: syncEngine)
+                Tab("More", systemImage: "ellipsis.circle", value: 1) {
+                    MoreView(syncEngine: syncEngine)
+                }
             }
-        }
-        .tint(Color("GardenGreen"))
-        .background(Color(.systemBackground))
-        .ignoresSafeArea()
-        .task {
-            await initSyncEngine()
-        }
-        .onChange(of: scenePhase) { _, newPhase in
-            if newPhase == .active {
-                Task {
-                    // Re-test connection when coming to foreground
-                    await serverDiscovery.testConnection()
-                    if serverDiscovery.isConnected {
-                        await syncEngine?.autoSyncIfNeeded()
+            .tint(Color("GardenGreen"))
+            .background(Color(.systemBackground))
+            .ignoresSafeArea()
+            .task {
+                await initSyncEngine()
+            }
+            .onChange(of: scenePhase) { _, newPhase in
+                if newPhase == .active {
+                    Task {
+                        await serverDiscovery.testConnection()
+                        if serverDiscovery.isConnected {
+                            await syncEngine?.autoSyncIfNeeded()
+                        }
                     }
                 }
             }
+        } else {
+            ServerSetupView()
         }
     }
 

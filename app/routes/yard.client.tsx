@@ -1115,9 +1115,9 @@ export function YardEditor({
   // --- Render ---
 
   return (
-    <div className="h-screen w-full flex overflow-hidden">
+    <div className="h-screen w-full relative overflow-hidden">
     <div
-      className="flex-1 h-full overflow-hidden relative"
+      className="absolute inset-0 overflow-hidden"
       ref={containerRef}
     >
       <svg
@@ -1350,7 +1350,6 @@ export function YardEditor({
         gridWidth={gridWidth}
         gridHeight={gridHeight}
         onNavigate={panZoom.setView}
-        panelOpen={!!selected}
       />
 
       {/* Smart place — bottom right */}
@@ -1393,7 +1392,7 @@ export function YardEditor({
         const config = SHAPE_CONFIG[selected.shapeType as ShapeType] ?? SHAPE_CONFIG.rectangle;
         const isPlantable = config.plantable ?? false;
         return (
-        <div className="w-72 h-full border-l border-earth-200 dark:border-gray-700 bg-white dark:bg-gray-800 overflow-y-auto shrink-0 flex flex-col">
+        <div className="absolute top-0 right-0 w-72 h-full border-l border-earth-200 dark:border-gray-700 bg-white dark:bg-gray-800 overflow-y-auto flex flex-col z-30 shadow-lg">
           {/* Sticky header */}
           <div className="sticky top-0 z-10 bg-white dark:bg-gray-800 border-b border-earth-200 dark:border-gray-700 px-4 py-3 flex items-center justify-between">
             <div className="flex items-center gap-2 min-w-0">

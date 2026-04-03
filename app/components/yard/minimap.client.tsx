@@ -29,7 +29,6 @@ export function Minimap({
   gridWidth,
   gridHeight,
   onNavigate,
-  panelOpen,
 }: {
   yard: Yard;
   elements: YardElement[];
@@ -40,7 +39,6 @@ export function Minimap({
   gridWidth: number;
   gridHeight: number;
   onNavigate: (viewX: number, viewY: number) => void;
-  panelOpen: boolean;
 }) {
   const isDark = useIsDark();
   const minimapWidth = 160;
@@ -55,9 +53,7 @@ export function Minimap({
 
   return (
     <div
-      className={`absolute bottom-8 z-20 rounded-lg border border-earth-200 dark:border-gray-700 shadow-md bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm overflow-hidden cursor-pointer ${
-        panelOpen ? "left-2" : "right-2"
-      }`}
+      className="absolute bottom-8 right-2 z-20 rounded-lg border border-earth-200 dark:border-gray-700 shadow-md bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm overflow-hidden cursor-pointer"
       onMouseDown={(e) => {
         e.preventDefault();
         handleClick(e);

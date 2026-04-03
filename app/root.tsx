@@ -26,7 +26,7 @@ export default async function Root() {
       type: "plant" as const,
       label: p.name,
       sublabel: p.category ?? undefined,
-      href: `/plants?selected=${p.id}`,
+      href: allYards.length > 0 ? `/yard/${allYards[0].id}/plants` : `/yard`,
     })),
     ...allYards.map((y) => ({
       id: `yard-${y.id}`,
@@ -47,7 +47,7 @@ export default async function Root() {
       id: `task-${t.id}`,
       type: "task" as const,
       label: t.title,
-      href: "/tasks",
+      href: allYards.length > 0 ? `/yard/${allYards[0].id}/tasks` : `/yard`,
     })),
   ];
 

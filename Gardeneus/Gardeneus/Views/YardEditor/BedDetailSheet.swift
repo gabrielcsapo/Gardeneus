@@ -13,6 +13,7 @@ struct BedDetailSheet: View {
 
     @State private var showAddPlanting = false
     @State private var showAddLog = false
+    @State private var showDeleteConfirm = false
     @State private var logNotes = ""
     @State private var selectedLogType = "observation"
 
@@ -46,9 +47,26 @@ struct BedDetailSheet: View {
             .navigationTitle(element.label ?? "Bed Details")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button(role: .destructive) {
+                        showDeleteConfirm = true
+                    } label: {
+                        Image(systemName: "trash")
+                            .foregroundStyle(.red)
+                    }
+                }
                 ToolbarItem(placement: .topBarTrailing) {
                     Button("Done") { dismiss() }
                 }
+            }
+            .alert("Delete Bed?", isPresented: $showDeleteConfirm) {
+                Button("Delete", role: .destructive) {
+                    deleteBed()
+                    dismiss()
+                }
+                Button("Cancel", role: .cancel) {}
+            } message: {
+                Text("This will remove the bed and all its plantings. This cannot be undone.")
             }
             .sheet(isPresented: $showAddPlanting) {
                 PlantPickerSheet(plants: allPlants) { plant in
@@ -101,27 +119,86 @@ struct BedDetailSheet: View {
 
     // MARK: - Properties
 
+    private static let sunOptions = ["full_sun", "partial_sun", "partial_shade", "full_shade"]
+    private static let extensionOptions = ["none", "cold_frame", "row_cover", "hoop_house", "greenhouse"]
+    private static let irrigationOptions = ["none", "drip", "sprinkler", "soaker_hose", "hand_water"]
+
     private var propertiesSection: some View {
         VStack(alignment: .leading, spacing: 12) {
             Text("Properties")
                 .font(.headline)
 
-            LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 10) {
-                PropertyRow(label: "Sun", value: element.sunExposure?.capitalized ?? "Not set", icon: "sun.max.fill")
-
-                if let ext = element.seasonExtension, ext != "none" {
-                    PropertyRow(label: "Extension", value: ext.replacingOccurrences(of: "_", with: " ").capitalized, icon: "thermometer.snowflake")
+            VStack(spacing: 12) {
+                // Sun Exposure
+                HStack {
+                    Label("Sun", systemImage: "sun.max.fill")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                        .frame(width: 110, alignment: .leading)
+                    Picker("Sun", selection: Binding(
+                        get: { element.sunExposure ?? "full_sun" },
+                        set: { element.sunExposure = $0; touchUpdatedAt() }
+                    )) {
+                        ForEach(Self.sunOptions, id: \.self) { opt in
+                            Text(opt.replacingOccurrences(of: "_", with: " ").capitalized).tag(opt)
+                        }
+                    }
+                    .pickerStyle(.menu)
+                    .tint(.primary)
                 }
 
-                if let irr = element.irrigationType, irr != "none" {
-                    PropertyRow(label: "Irrigation", value: irr.replacingOccurrences(of: "_", with: " ").capitalized, icon: "drop.fill")
+                // Season Extension
+                HStack {
+                    Label("Extension", systemImage: "thermometer.snowflake")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                        .frame(width: 110, alignment: .leading)
+                    Picker("Extension", selection: Binding(
+                        get: { element.seasonExtension ?? "none" },
+                        set: { element.seasonExtension = $0; touchUpdatedAt() }
+                    )) {
+                        ForEach(Self.extensionOptions, id: \.self) { opt in
+                            Text(opt.replacingOccurrences(of: "_", with: " ").capitalized).tag(opt)
+                        }
+                    }
+                    .pickerStyle(.menu)
+                    .tint(.primary)
                 }
 
-                PropertyRow(label: "Mulched", value: element.mulched ? "Yes" : "No", icon: "leaf.fill")
+                // Irrigation
+                HStack {
+                    Label("Irrigation", systemImage: "drop.fill")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                        .frame(width: 110, alignment: .leading)
+                    Picker("Irrigation", selection: Binding(
+                        get: { element.irrigationType ?? "none" },
+                        set: { element.irrigationType = $0; touchUpdatedAt() }
+                    )) {
+                        ForEach(Self.irrigationOptions, id: \.self) { opt in
+                            Text(opt.replacingOccurrences(of: "_", with: " ").capitalized).tag(opt)
+                        }
+                    }
+                    .pickerStyle(.menu)
+                    .tint(.primary)
+                }
 
-                PropertyRow(label: "Rotation", value: "\(element.rotation)\u{00B0}", icon: "rotate.right")
+                // Mulched
+                Toggle(isOn: Binding(
+                    get: { element.mulched },
+                    set: { element.mulched = $0; touchUpdatedAt() }
+                )) {
+                    Label("Mulched", systemImage: "leaf.fill")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                }
+                .tint(Color("GardenGreen"))
             }
         }
+    }
+
+    private func touchUpdatedAt() {
+        element.updatedAt = ISO8601DateFormatter().string(from: Date())
     }
 
     // MARK: - Plantings
@@ -251,6 +328,21 @@ struct BedDetailSheet: View {
         case "weather": return .teal
         default: return .gray
         }
+    }
+
+    // MARK: - Delete Bed
+
+    private func deleteBed() {
+        // Delete associated plantings
+        for planting in plantings {
+            modelContext.delete(planting)
+        }
+        // Delete associated log entries
+        for entry in bedLogEntries {
+            modelContext.delete(entry)
+        }
+        // Delete the element itself
+        modelContext.delete(element)
     }
 
     // MARK: - Add Planting

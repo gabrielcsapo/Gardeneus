@@ -1,10 +1,10 @@
-import { Link } from "react-flight-router/client";
 import { db } from "../db/index.ts";
 import { seedInventory, plants } from "../db/schema.ts";
 import { eq, sql } from "drizzle-orm";
 import { addSeed, deleteSeed } from "./seeds.actions.ts";
 import { exportSeeds } from "./export.actions.ts";
 import { SeedInventoryList, ExportButton } from "./seeds.client.tsx";
+import { RouteSlideOver } from "../components/route-slide-over.client.tsx";
 
 const Component = async () => {
   const allSeeds = await db
@@ -33,7 +33,6 @@ const Component = async () => {
   const seedsWithStatus = allSeeds.map((s) => {
     const isExpiring =
       s.expirationDate != null && new Date(s.expirationDate) <= threeMonthsOut;
-    // Calculate viability percentage based on purchase date + viability years
     let viabilityPct: number | null = null;
     if (s.purchaseDate && s.seedViabilityYears) {
       const purchased = new Date(s.purchaseDate);
@@ -50,32 +49,22 @@ const Component = async () => {
     .orderBy(sql`${plants.name} ASC`);
 
   return (
-    <main className="mx-auto max-w-6xl px-6 py-8">
-      <nav className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 mb-6">
-        <Link to="/" className="hover:text-garden-700 dark:hover:text-garden-400 transition-colors">
-          Home
-        </Link>
-        <span>/</span>
-        <span className="text-gray-900 dark:text-gray-100">Seed Inventory</span>
-      </nav>
-
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="text-xl font-semibold text-gray-900 dark:text-gray-100" style={{ viewTransitionName: "page-title" }}>Seed Inventory</h1>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+    <RouteSlideOver title="Seed Inventory" width="w-[580px]">
+      <div className="p-5">
+        <div className="flex items-center justify-between mb-4">
+          <p className="text-sm text-gray-500 dark:text-gray-400">
             Track your seed packets, viability, and quantities.
           </p>
+          <ExportButton exportAction={exportSeeds} label="Export CSV" />
         </div>
-        <ExportButton exportAction={exportSeeds} label="Export CSV" />
+        <SeedInventoryList
+          seeds={seedsWithStatus}
+          plants={allPlants}
+          addAction={addSeed}
+          deleteAction={deleteSeed}
+        />
       </div>
-
-      <SeedInventoryList
-        seeds={seedsWithStatus}
-        plants={allPlants}
-        addAction={addSeed}
-        deleteAction={deleteSeed}
-      />
-    </main>
+    </RouteSlideOver>
   );
 };
 

@@ -14,10 +14,14 @@ class ServerDiscovery {
     var lastChecked: Date?
 
     private static let serverURLKey = "serverURL"
-    private static let defaultURL = "http://localhost:3001"
+
+    /// Whether the user has configured a server URL
+    var isConfigured: Bool {
+        !serverURL.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+    }
 
     init() {
-        self.serverURL = UserDefaults.standard.string(forKey: Self.serverURLKey) ?? Self.defaultURL
+        self.serverURL = UserDefaults.standard.string(forKey: Self.serverURLKey) ?? ""
     }
 
     /// Tests whether the currently configured server URL is reachable

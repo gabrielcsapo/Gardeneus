@@ -1,9 +1,9 @@
-import { Link } from "react-flight-router/client";
 import { db } from "../db/index.ts";
 import { soilProfiles, yardElements } from "../db/schema.ts";
 import { eq, sql } from "drizzle-orm";
 import { addSoilProfile, deleteSoilProfile } from "./soil.actions.ts";
 import { SoilProfileList } from "./soil.client.tsx";
+import { RouteSlideOver } from "../components/route-slide-over.client.tsx";
 
 const Component = async () => {
   const profiles = await db
@@ -30,29 +30,19 @@ const Component = async () => {
     .orderBy(sql`${yardElements.label} ASC`);
 
   return (
-    <main className="mx-auto max-w-6xl px-6 py-8">
-      <nav className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 mb-6">
-        <Link to="/" className="hover:text-garden-700 dark:hover:text-garden-400 transition-colors">
-          Home
-        </Link>
-        <span>/</span>
-        <span className="text-gray-900 dark:text-gray-100">Soil Health</span>
-      </nav>
-
-      <div className="mb-6">
-        <h1 className="text-xl font-semibold text-gray-900 dark:text-gray-100" style={{ viewTransitionName: "page-title" }}>Soil Health</h1>
-        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+    <RouteSlideOver title="Soil Health" width="w-[580px]">
+      <div className="p-5">
+        <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
           Track soil test results and monitor nutrient levels per bed.
         </p>
+        <SoilProfileList
+          profiles={profiles}
+          beds={beds}
+          addAction={addSoilProfile}
+          deleteAction={deleteSoilProfile}
+        />
       </div>
-
-      <SoilProfileList
-        profiles={profiles}
-        beds={beds}
-        addAction={addSoilProfile}
-        deleteAction={deleteSoilProfile}
-      />
-    </main>
+    </RouteSlideOver>
   );
 };
 

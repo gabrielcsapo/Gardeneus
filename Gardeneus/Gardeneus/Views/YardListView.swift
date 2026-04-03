@@ -16,6 +16,7 @@ struct YardListView: View {
                         ForEach(yards, id: \.id) { yard in
                             NavigationLink {
                                 GardenDetailView(yard: yard)
+                                    .toolbar(.hidden, for: .tabBar)
                             } label: {
                                 YardCard(yard: yard, elements: elementsForYard(yard))
                             }

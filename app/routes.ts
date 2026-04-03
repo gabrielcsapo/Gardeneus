@@ -18,54 +18,46 @@ export const routes: RouteConfig[] = [
         component: () => import("./routes/yard.js"),
       },
       {
-        id: "yard-editor",
+        id: "yard-detail",
         path: "yard/:id",
         component: () => import("./routes/yard.$id.js"),
-      },
-      {
-        id: "plants",
-        path: "plants",
-        component: () => import("./routes/plants.js"),
-      },
-      {
-        id: "calendar",
-        path: "calendar",
-        component: () => import("./routes/calendar.js"),
-      },
-      {
-        id: "log",
-        path: "log",
-        component: () => import("./routes/log.js"),
-      },
-      {
-        id: "tasks",
-        path: "tasks",
-        component: () => import("./routes/tasks.js"),
-      },
-      {
-        id: "pests",
-        path: "pests",
-        component: () => import("./routes/pests.js"),
-      },
-      {
-        id: "seeds",
-        path: "seeds",
-        component: () => import("./routes/seeds.js"),
-      },
-      {
-        id: "soil",
-        path: "soil",
-        component: () => import("./routes/soil.js"),
-      },
-      {
-        id: "docs",
-        path: "docs",
-        component: () => import("./routes/docs.js"),
-      },
-      {
-        id: "settings",
-        path: "settings",
-        component: () => import("./routes/settings.js"),
+        children: [
+          {
+            id: "yard-index",
+            index: true,
+            component: () => import("./routes/yard.$id.index.js"),
+          },
+          {
+            id: "yard-plants",
+            path: "plants",
+            component: () => import("./routes/yard.$id.plants.js"),
+          },
+          {
+            id: "yard-tasks",
+            path: "tasks",
+            component: () => import("./routes/yard.$id.tasks.js"),
+          },
+          {
+            id: "yard-seeds",
+            path: "seeds",
+            component: () => import("./routes/yard.$id.seeds.js"),
+          },
+          {
+            id: "yard-soil",
+            path: "soil",
+            component: () => import("./routes/yard.$id.soil.js"),
+          },
+          {
+            id: "yard-pests",
+            path: "pests",
+            component: () => import("./routes/yard.$id.pests.js"),
+          },
+          {
+            id: "yard-settings",
+            path: "settings",
+            component: () => import("./routes/yard.$id.settings.js"),
+          },
+        ],
       },
     ],
   },

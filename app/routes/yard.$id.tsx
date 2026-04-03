@@ -1,12 +1,11 @@
+import { Outlet } from "react-flight-router/client";
 import { db } from "../db/index.ts";
-import { yards, yardElements, plants, plantings, settings, tasks, logEntries, pestDisease } from "../db/schema.ts";
+import { yards, yardElements, plants, plantings, settings, tasks, logEntries } from "../db/schema.ts";
 import { eq, inArray, desc, sql } from "drizzle-orm";
 import { YardEditor } from "./yard.client.tsx";
 import { GardenHub } from "./garden-hub.client.tsx";
 import { GanttCalendar, MoonPhaseCard, ExportButton as CalendarExportButton } from "./calendar.client.tsx";
 import { TaskList, AddTaskForm } from "./tasks.client.tsx";
-import { PlantsPageTabs, PlantSearch } from "./plants.client.tsx";
-import { PestDashboard } from "./pests.client.tsx";
 import { InteractiveLog, ExportButton as LogExportButton } from "./log.client.tsx";
 import { generateTasksForPlantings } from "../lib/task-generator.ts";
 import { getMoonPhase } from "../lib/moon-phases.ts";
@@ -16,8 +15,8 @@ import { completeTask, uncompleteTask, deleteTask, updateTask, createTask } from
 import { createLogEntry, updateLogEntry, deleteLogEntry } from "./log.actions.ts";
 import { exportLogs } from "./export.actions.ts";
 
-const Component = async ({ params }: { params: { id: string } }) => {
-  const yardId = Number(params.id);
+const Component = async ({ params }: { params?: Record<string, string> }) => {
+  const yardId = Number(params?.id);
 
   await generateTasksForPlantings();
 
@@ -201,51 +200,6 @@ const Component = async ({ params }: { params: { id: string } }) => {
       .where(inArray(plantings.yardElementId, elementIds));
   }
 
-  // ── Plants section ────────────────────────────────────────────────
-  const allPlantsForLibrary = await db.select().from(plants);
-
-  const activePlantingsForLibrary = designPlantings.map((p) => {
-    const plant = allPlants.find((pl) => pl.id === p.plantId);
-    const element = elements.find((e) => e.id === p.yardElementId);
-    return {
-      plantId: p.plantId,
-      plantName: plant?.name ?? null,
-      bedLabel: element?.label ?? null,
-      yardElementId: p.yardElementId,
-    };
-  });
-
-  const allPests = await db
-    .select()
-    .from(pestDisease)
-    .orderBy(sql`${pestDisease.type} ASC, ${pestDisease.name} ASC`);
-
-  const activePlantNames = [
-    ...new Set(activePlantingsForLibrary.map((p) => p.plantName).filter(Boolean) as string[]),
-  ].sort();
-
-  const currentMonth = new Date().getMonth() + 1;
-  const seasonalAlertIds = allPests
-    .filter((p) => {
-      const months = p.activeMonths as number[] | null;
-      if (!months || !months.includes(currentMonth)) return false;
-      const affected = p.affectedPlants as string[] | null;
-      if (!affected) return false;
-      return affected.some((ap) => activePlantNames.includes(ap));
-    })
-    .map((p) => p.id);
-
-  const allSymptoms = new Set<string>();
-  for (const p of allPests) {
-    if (p.symptoms) {
-      p.symptoms.split(/[,;]/).forEach((s) => {
-        const trimmed = s.trim().toLowerCase();
-        if (trimmed.length > 2) allSymptoms.add(trimmed);
-      });
-    }
-  }
-  const symptomList = [...allSymptoms].sort();
-
   // ── Render ────────────────────────────────────────────────────────
   const calendarSection = userSettings?.lastFrostDate ? (
     <main className="mx-auto max-w-6xl px-6 py-8">
@@ -288,42 +242,12 @@ const Component = async ({ params }: { params: { id: string } }) => {
           Configure your frost dates in settings to see your planting calendar.
         </p>
         <a
-          href="/settings"
+          href={`/yard/${yardId}/settings`}
           className="inline-flex items-center gap-2 rounded-lg bg-garden-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-garden-700 transition-colors no-underline"
         >
           Go to Settings
         </a>
       </div>
-    </main>
-  );
-
-  const plantsSection = (
-    <main className="mx-auto max-w-6xl px-6 py-8">
-      <div className="mb-6">
-        <h1 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Plants</h1>
-        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-          {allPlantsForLibrary.length} plants with planting schedules for your zone.
-        </p>
-      </div>
-      <PlantsPageTabs
-        plantsTab={
-          <PlantSearch
-            plants={allPlantsForLibrary}
-            lastFrostDate={userSettings?.lastFrostDate ?? null}
-            activePlantings={activePlantingsForLibrary}
-          />
-        }
-        pestsTab={
-          <PestDashboard
-            pests={allPests}
-            plantNames={activePlantNames}
-            seasonalAlertIds={seasonalAlertIds}
-            symptomList={symptomList}
-            currentMonth={currentMonth}
-            logAction={createLogEntry}
-          />
-        }
-      />
     </main>
   );
 
@@ -344,21 +268,24 @@ const Component = async ({ params }: { params: { id: string } }) => {
   );
 
   return (
-    <GardenHub
-      yardId={yard.id}
-      yardName={yard.name}
-      yards={allYards}
-      designSection={
-        <YardEditor
-          yard={yard}
-          elements={elements}
-          plants={allPlants}
-          plantings={designPlantings}
-        />
-      }
-      calendarSection={calendarSection}
-      logSection={logSection}
-    />
+    <>
+      <GardenHub
+        yardId={yard.id}
+        yardName={yard.name}
+        yards={allYards}
+        designSection={
+          <YardEditor
+            yard={yard}
+            elements={elements}
+            plants={allPlants}
+            plantings={designPlantings}
+          />
+        }
+        calendarSection={calendarSection}
+        logSection={logSection}
+      />
+      <Outlet />
+    </>
   );
 };
 
